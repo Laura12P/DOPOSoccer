@@ -14,6 +14,7 @@ import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 import domain.DOPOSoccer;
 import domain.Player;
+import domain.DOPOSoccerException;
 /**
  * es la pantalla del juego
  * el tiempo
@@ -115,15 +116,26 @@ public class GamePanel extends JPanel implements ActionListener {
      * se usan copias para que cada partido empiece desde cero
      * @param one es el jugador del lado izquierdo
      * @param two es el jugador del lado derecho
+     * @param byGoals es true si el partido es por goles o false por tiempo
+     * @param amount son los goles para ganar o minutos del partido
+     * @param machine es el tipo de maquina del jugador de der
      */
-    public void prepareMatch(Player one, Player two, boolean byGoals, int amount) {
-        soccer = new DOPOSoccer(one.copy(), two.copy(), field.getWidth(),
-                field.getFieldHeight(), byGoals, amount);
+    public void prepareMatch(Player one, Player two, boolean byGoals, int amount, String machine) {
+        soccer = new DOPOSoccer(one.copy(), two.copy(), field.getWidth(), field.getFieldHeight(), byGoals, amount);
+       if (machine != null) {
+            try {
+                soccer.setMachine(machine);
+            } catch (DOPOSoccerException e) {
+                JOptionPane.showMessageDialog(this, e.getMessage());
+            }
+        }
         showTime();
         timer.restart();
         field.setSoccer(soccer);
         updateScoreboard();
     }
+       
+    
 
     /**
      * muestra los goles de cada jugador en el marcador y en la barra de abajo
@@ -134,8 +146,12 @@ public class GamePanel extends JPanel implements ActionListener {
         scoreboard.setText(playerOne.getGoals() + "-" + playerTwo.getGoals());
         infoOne.setText(playerOne.getName() + "-" + playerOne.getCountry() + 
         " Goles " + playerOne.getGoals());
-        infoTwo.setText(playerTwo.getName() + "-" + playerTwo.getCountry() + 
-        " Goles " + playerTwo.getGoals());
+        String machineText = "";
+        if (soccer.isMachine(2)) {
+            machineText = " (Maquina " + soccer.getMachineName() + ")";
+        }
+        infoTwo.setText(playerTwo.getName() + "-" + playerTwo.getCountry() + machineText
+                + " Goles " + playerTwo.getGoals());
         if (soccer.isOver()) {
             endMatch();
         }

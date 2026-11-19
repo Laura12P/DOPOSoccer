@@ -10,6 +10,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+
 /**
  * es la pantalla que muestra los controles
  * antes de empezar el partido
@@ -96,7 +97,7 @@ public class ControlsPanel extends JPanel implements ActionListener {
             if (twoPlayers) {
                 window.showScreen(MainWindow.PLAYER_TWO);
             } else {
-                window.showScreen(MainWindow.PLAYER_ONE);
+                window.showScreen(MainWindow.MACHINE);
             }
         }
     }

@@ -18,9 +18,6 @@ public class DOPOSoccerTest {
     private Player two;
     private DOPOSoccer soccer;
 
-    /**
-     * antes de cada prueba crea un partido por tiempo de un minuto con dos jugadores iguales
-     */
     @Before
     public void setUp() {
         one = new Player("Uno", "Colombia", 3, 3, 3, 3, new BlueAura());

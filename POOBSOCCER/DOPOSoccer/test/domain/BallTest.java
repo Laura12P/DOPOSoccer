@@ -14,9 +14,7 @@ import org.junit.Test;
 public class BallTest {
     private Ball ball;
 
-    /**
-     * antes de cada prueba crea un balon quieto en el aire
-     */
+
     @Before
     public void setUp() {
         ball = new Ball();

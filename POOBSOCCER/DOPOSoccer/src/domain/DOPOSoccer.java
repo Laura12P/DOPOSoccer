@@ -15,6 +15,7 @@ public class DOPOSoccer {
     public static final int GOAL_HEIGHT = 160;
     public static final int WIN_POINTS = 100;
     public static final int LOSE_POINTS = 25;
+    public static final String[] MACHINES = {"Torpe", "Ofensiva", "Defensiva", "Experta"};
     private static final int SIDE_MARGIN = 25;
     private static final int BALL_START_HEIGHT = 200;
     private static final int BALL_RADIUS = 12;
@@ -33,6 +34,7 @@ public class DOPOSoccer {
     private boolean over;
     private boolean byGoals;
     private int goalTarget;
+    private Machine machine;
     /**
      * CONSTRUCTOR
      * prepara el partido con los jugadores en su lugar
@@ -127,6 +129,9 @@ public class DOPOSoccer {
      */
     public boolean update() {
         boolean goal = false;
+        if (machine != null) {
+            machine.play(this, 2);
+        }
         playerOne.update(SIDE_MARGIN, width - SIDE_MARGIN);
         playerTwo.update(SIDE_MARGIN, width - SIDE_MARGIN);
         collidePlayers();
@@ -324,9 +329,48 @@ public class DOPOSoccer {
     public boolean isByGoals() {
         return byGoals;
     }
-
     /**
-     * @return los goles que se necesitan para ganar, solo en partidos por goles
+     * pone una maquina a manejar el jugador de la der
+     * @param profile es el tipo de maquina para asignar
+     * @throws DOPOSoccerException si no existe ese tipo de maquina
+     */
+    public void setMachine(String profile) throws DOPOSoccerException {
+        if (MACHINES[0].equals(profile)) {
+            machine = new ClumsyMachine();
+        } else if (MACHINES[1].equals(profile)) {
+            machine = new OffensiveMachine();
+        } else if (MACHINES[2].equals(profile)){
+            machine = new DefensiveMachine();
+        } else if (MACHINES[3].equals(profile)){
+            machine = new ExpertMachine();
+        } else {
+            throw new DOPOSoccerException(DOPOSoccerException.UNKNOWN_MACHINE);
+        }
+    }
+    /**
+     * @param number es 1 para el jugador izq y 2 para el der
+     * retorna true si a ese jugador lo maneja la maquina
+     */
+    public boolean isMachine(int number) {
+        return number == 2 && machine != null;
+    }
+    /**
+     * retorna el tipo de maquina que se esta jugando
+     */
+    public String getMachineName() {
+        if (machine == null) {
+            return null;
+        }
+        return machine.getName();
+    }
+    /**
+     * retorna el ancho de la cancha
+     */
+    public int getWidth() {
+        return width;
+    }
+    /**
+     * retorna los goles que se necesitan para ganar, solo en partidos por goles
      */
     public int getGoalTarget() {
         return goalTarget;

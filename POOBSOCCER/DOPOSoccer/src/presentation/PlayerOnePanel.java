@@ -78,14 +78,14 @@ public class PlayerOnePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * va a los controles si ya se escogio jugador
+     * Va a escoger el tipo de maquina
      * @param e es el evento cuando se da click
      */
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == readyButton) {
             if (selector.hasSelected()) {
                 window.savePlayers(selector.getSelected(), PlayerSelector.atRandom());
-                window.showScreen(MainWindow.CONTROLS_ONE);
+                window.showScreen(MainWindow.MACHINE);
             } else {
                 JOptionPane.showMessageDialog(this, "primero elija un jugador");
             }

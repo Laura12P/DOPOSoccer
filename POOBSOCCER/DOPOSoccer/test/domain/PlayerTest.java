@@ -16,9 +16,6 @@ public class PlayerTest {
     private static final double DELTA = 0.01;
     private Player player;
 
-    /**
-     * antes de cada prueba crea un jugador nuevo con todas las estadisticas en 3 parado en el 200
-     */
     @Before
     public void setUp() {
         player = new Player("Prueba", "Colombia", 3, 3, 3, 3, new BlueAura());

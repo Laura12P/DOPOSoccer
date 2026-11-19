@@ -1,5 +1,7 @@
 package presentation;
 import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -27,6 +29,7 @@ public class MainWindow extends JFrame {
     public static final String PLAYER_ONE = "jugadorUno";
     public static final String PLAYER_TWO = "jugadorDos";
     public static final String CONFIG = "configuracion";
+    public static final String MACHINE = "maquina";
     
     // dimensiones de la ventana
     private static final int WIDTH = 900;
@@ -51,6 +54,10 @@ public class MainWindow extends JFrame {
     private int lastWidth;
     private int lastHeight;
     private String lastControls;
+    private boolean lastFullScreen;
+    private MachinePanel machinePanel;
+    private String machine;
+    private String currentScreen;
 
     /**
      * Crea la ventana con las pantallas.
@@ -90,8 +97,11 @@ public class MainWindow extends JFrame {
         container.add(configPanel, CONFIG);
         add(container);
         cards.show(container, START);
+        currentScreen = START;
         playerOnePanel = new PlayerOnePanel(this);
         container.add(playerOnePanel, PLAYER_ONE);
+        machinePanel = new MachinePanel(this);
+        container.add(machinePanel, MACHINE);
     }
 
     /**
@@ -107,11 +117,13 @@ public class MainWindow extends JFrame {
      * @param screen nombre de la pantalla
      */
     public void showScreen(String screen) {
+        leaveFullScreen();
         if (getWidth() != WIDTH || getHeight() != HEIGHT) {
             setSize(WIDTH, HEIGHT);
             setLocationRelativeTo(null);
         }
         cards.show(container, screen);
+        currentScreen = screen;
     }
 
     /**
@@ -144,6 +156,7 @@ public class MainWindow extends JFrame {
     public void choosePlayerOne(String country) {
         playerOnePanel.loadCountry(country);
         cards.show(container, PLAYER_ONE);
+        currentScreen = PLAYER_ONE;
     }
 
     /**
@@ -156,6 +169,7 @@ public class MainWindow extends JFrame {
     public void choosePlayerTwo(String countryOne, String countryTwo) {
         playerTwoPanel.loadCountries(countryOne, countryTwo);
         cards.show(container, PLAYER_TWO);
+        currentScreen = PLAYER_TWO;
     }
 
     /**
@@ -167,9 +181,22 @@ public class MainWindow extends JFrame {
     public void savePlayers(Player one, Player two) {
         playerOne = one;
         playerTwo = two;
+        machine = null;
+    /**
+     * guarda el tipo de maquina que va a manejar el jugador de la der
+     * @param profile es el tipo de maquina que se escogio
+     */
     }
-
-        /**
+    public void saveMachine(String profile) {
+        machine = profile;
+    }
+    /**
+     * retorna el tipo de maquina que se escogio
+     */
+    public String getMachine() {
+        return machine;
+    }
+    /**
      * Muestra la pantalla de configuracion del partido.
      *
      * @param backScreen pantalla de controles a la que vuelve el boton volver
@@ -192,17 +219,27 @@ public class MainWindow extends JFrame {
      *
      * @param byGoals true si el partido es por goles, false si es por tiempo
      * @param amount goles para ganar, o minutos del partido
+     * @param width es el anchp de la ventana
+     * @param height es el alto de la ventana
+     * @param fullScreen s true si el partido se juega con pantalla completa
      */
-    public void startMatch(boolean byGoals, int amount, int width, int height) {
+    public void startMatch(boolean byGoals, int amount, int width, int height, boolean fullScreen) {
         lastByGoals = byGoals;
         lastAmount = amount;
         lastWidth = width;
         lastHeight = height;
-        setSize(width, height);
-        setLocationRelativeTo(null);
+        lastFullScreen = fullScreen;
+        if (fullScreen) {
+            enterFullScreen();
+        } else {
+            leaveFullScreen();
+            setSize(width, height);
+            setLocationRelativeTo(null);
+        }
         cards.show(container, GAME);
+        currentScreen = GAME;
         validate();
-        gamePanel.prepareMatch(playerOne.copy(), playerTwo.copy(), byGoals, amount);
+        gamePanel.prepareMatch(playerOne.copy(), playerTwo.copy(), byGoals, amount, machine);
         gamePanel.begin();
     }
 
@@ -210,6 +247,44 @@ public class MainWindow extends JFrame {
      * Empieza de nuevo el partido con los mismos jugadores y la misma configuracion.
      */
     public void restartMatch() {
-        startMatch(lastByGoals, lastAmount, lastWidth, lastHeight);
+        startMatch(lastByGoals, lastAmount, lastWidth, lastHeight, lastFullScreen);
+    }
+    /**
+     * pone la ventana sin bordes y fullscreen
+     */
+    private void enterFullScreen() {
+        if (!isUndecorated()) {
+            boolean visible = isVisible();
+            dispose();
+            setUndecorated(true);
+            setVisible(visible);
+        }
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        setBounds(0, 0, screen.width, screen.height);
+    }
+    /**
+     * si la ventana esta en fullscreen vuelve a ponerla normal
+     */
+    private void leaveFullScreen() {
+        if (isUndecorated()){
+            boolean visible = isVisible();
+            dispose();
+            setUndecorated(false);
+            setSize(WIDTH,HEIGHT);
+            setLocationRelativeTo(null);
+            setVisible(visible);
+        }
+    }
+    /**
+     * retorna el nombre de la pantalla que se esta mostrando
+     */
+    public String getCurrentScreen(){
+        return currentScreen;
+    }
+    /**
+     * retorna true si la ventana esta en pantalla completa
+     */
+    public boolean isFullScreen() {
+        return isUndecorated();
     }
 }

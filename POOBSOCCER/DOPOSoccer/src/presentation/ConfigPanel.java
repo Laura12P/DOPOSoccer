@@ -20,6 +20,7 @@ import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.JCheckBox;
 
 /**
  * pantalla donde se configura el partido
@@ -45,6 +46,7 @@ public class ConfigPanel extends JPanel implements ActionListener {
     private JSpinner amount;
     private JButton playButton;
     private JButton backButton;
+    private JCheckBox fullScreenBox;
 
     /**
      * CONSTRUCTOR
@@ -131,6 +133,12 @@ public class ConfigPanel extends JPanel implements ActionListener {
         sizeBlock.setOpaque(false);
         sizeBlock.add(sizeLabel, BorderLayout.NORTH);
         sizeBlock.add(sizes, BorderLayout.CENTER);
+        fullScreenBox = new JCheckBox("Pantalla completa");
+        fullScreenBox.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
+        fullScreenBox.setForeground(Color.WHITE);
+        fullScreenBox.setOpaque(false);
+        fullScreenBox.setFocusPainted(false);
+        fullScreenBox.setHorizontalAlignment(SwingConstants.CENTER);
 
         JPanel center = new JPanel(new GridLayout(3, 1, 0, 15));
         center.setOpaque(false);
@@ -158,10 +166,13 @@ public class ConfigPanel extends JPanel implements ActionListener {
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
         bottom.add(backButton, BorderLayout.WEST);
+        bottom.add(fullScreenBox, BorderLayout.CENTER);
         bottom.add(playButton, BorderLayout.EAST);
         panel.add(bottom, BorderLayout.SOUTH);
 
         add(panel, BorderLayout.CENTER);
+
+
     }
 
     /**
@@ -226,7 +237,8 @@ public class ConfigPanel extends JPanel implements ActionListener {
                     size = i;
                 }
             }
-            window.startMatch(goalsButton.isSelected(), value, WIDTHS[size], HEIGHTS[size]);
+            window.startMatch(goalsButton.isSelected(), value, WIDTHS[size], HEIGHTS[size],
+                fullScreenBox.isSelected());
         } else if (e.getSource() == backButton) {
             window.showScreen(backScreen);
         } else {

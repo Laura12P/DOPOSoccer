@@ -100,6 +100,7 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
 
     /**
      * en cada paso del reloj mueve a los jugadores segun las teclas oprimidas
+     * si el jugador 2 es la maquina, sus teclas no hacen nada
      * @param e es el evento del reloj
      */
     public void actionPerformed(ActionEvent e) {
@@ -112,31 +113,33 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
         if (jumpOne) {
             soccer.jump(1);
         }
-        if (leftTwo) {
-            soccer.moveLeft(2);
-        }
-        if (rightTwo) {
-            soccer.moveRight(2);
-        }
-        if (jumpTwo) {
-            soccer.jump(2);
+        if (!soccer.isMachine(2)) {
+            if (leftTwo) {
+                soccer.moveLeft(2);
+            }
+            if (rightTwo) {
+                soccer.moveRight(2);
+            }
+            if (jumpTwo) {
+                soccer.jump(2);
+            }
         }
         if (kickOne) {
             soccer.kick(1);
             kickOne = false;
         }
-        if (kickTwo) {
+        if (kickTwo && !soccer.isMachine(2)) {
             soccer.kick(2);
-            kickTwo = false;
         }
+        kickTwo = false;
         if (powerOne) {
             soccer.activatePower(1);
             powerOne = false;
         }
-        if (powerTwo) {
+        if (powerTwo && !soccer.isMachine(2)) {
             soccer.activatePower(2);
-            powerTwo = false;
         }
+        powerTwo = false;
         if (soccer.update()) {
             game.updateScoreboard();
         }
