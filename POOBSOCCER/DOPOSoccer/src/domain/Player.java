@@ -7,7 +7,7 @@ package domain;
  */
 public class Player extends GameObject {
     private static final int BASE_LIFE = 100;
-    private static final int KICK_TIME = 12;
+    public static final int KICK_TIME = 12;
     private static final int KICK_DAMAGE = 10;
     private static final int MAX_POWER = 100;
     private static final int POWER_CHARGE = 10;
@@ -273,6 +273,13 @@ public class Player extends GameObject {
      */
     public boolean isKicking(){
         return kickTime > 0;
+    }
+
+    /**
+     * @return los pasos que le quedan a la patada
+     */
+    public int getKickTime() {
+        return kickTime;
     }
 
     /**

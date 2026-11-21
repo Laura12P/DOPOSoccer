@@ -222,12 +222,20 @@ public class GamePanel extends JPanel implements ActionListener {
         timer.stop();
         field.stop();
         Player winner = soccer.getWinner();
-        Player loser = soccer.getLoser();
+        boolean oneWon = winner == soccer.getPlayerOne();
+        window.addMatchPoints(oneWon);
         String message = "Gana " + winner.getName() + " (" + winner.getCountry() + ")\n"
-                + soccer.getPlayerOne().getGoals() + " - " + soccer.getPlayerTwo().getGoals()
-                + "\n\n"
-                + winner.getName() + ": +" + DOPOSoccer.WIN_POINTS + " puntos\n"
-                + loser.getName() + ": +" + DOPOSoccer.LOSE_POINTS + " puntos";
+                + soccer.getPlayerOne().getGoals() + " - " + soccer.getPlayerTwo().getGoals();
+        for (int number = 1; number <= 2; number++) {
+            if (window.getProfile(number) != null) {
+                int earned = DOPOSoccer.LOSE_POINTS;
+                if ((number == 1) == oneWon) {
+                    earned = DOPOSoccer.WIN_POINTS;
+                }
+                message = message + "\n" + window.getProfile(number) + ": +" + earned
+                        + " puntos (total " + window.getPoints(number) + ")";
+            }
+        }
         JOptionPane.showMessageDialog(this, message);
         window.showScreen(MainWindow.START);
     }

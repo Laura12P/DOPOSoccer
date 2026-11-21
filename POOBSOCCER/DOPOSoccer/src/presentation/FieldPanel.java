@@ -1,13 +1,17 @@
 package presentation;
 import domain.Player;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import domain.Ball;
@@ -22,6 +26,9 @@ import domain.DOPOSoccer;
 public class FieldPanel extends JPanel implements ActionListener, KeyListener {
     private static final Color GRASS = new Color(40, 120, 60);
     private static final Color LINES = Color.WHITE;
+    private static final Color NET_FILL = new Color(255, 255, 255, 60);
+    private static final Color NET_LINES = new Color(255, 255, 255, 150);
+    private static final Color POST_SHADOW = new Color(0, 0, 0, 130);
     private static final Color COLOR_ONE = new Color(230, 190, 40);
     private static final Color COLOR_TWO = new Color(200, 40, 40);
     private static final Color AURA_BLUE = new Color(0, 120, 255, 100);
@@ -34,6 +41,8 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
     private GamePanel game;
     private DOPOSoccer soccer;
     private Timer timer;
+    private Image background;
+    private Image ballImage;
     private boolean leftOne;
     private boolean rightOne;
     private boolean jumpOne;
@@ -44,6 +53,8 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
     private boolean kickTwo;
     private boolean powerOne;
     private boolean powerTwo;
+    private Image headOne;
+    private Image headTwo;
 
     /**
      * CONSTRUCTOR
@@ -53,6 +64,11 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
     public FieldPanel(GamePanel game) {
         this.game = game;
         setBackground(GRASS);
+        background = new ImageIcon("imagenes/cancha.png").getImage();
+        Image ball = new ImageIcon("imagenes/balon.png").getImage();
+        if (ball.getWidth(null) > 0) {
+            ballImage = new ImageIcon(ball.getScaledInstance(32, 32, Image.SCALE_SMOOTH)).getImage();
+        }
         setFocusable(true);
         addKeyListener(this);
         addMouseListener(new MouseAdapter() {
@@ -68,6 +84,8 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
      * @param soccer es el partido que se va a jugar
      */
     public void setSoccer(DOPOSoccer soccer) {
+        headOne = loadHead(soccer.getPlayerOne().getName());
+        headTwo = loadHead(soccer.getPlayerTwo().getName());
         this.soccer = soccer;
         releaseKeys();
         timer.start();
@@ -227,7 +245,11 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
         super.paintComponent(g);
         int width = getWidth();
         int ground = getHeight() - GROUND_MARGIN;
-        drawLines(g, width, ground);
+        if (background.getWidth(null) > 0) {
+            g.drawImage(background, 0, 0, width, getHeight(), this);
+        } else {
+            drawLines(g, width, ground);
+        }
         drawGoals(g, width, ground);
         if (soccer != null) {
             Player playerOne = soccer.getPlayerOne();
@@ -257,13 +279,13 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
             if (playerTwo.isPowerArmed()) {
                 drawAura(g, xTwo, groundTwo, playerTwo);
             }
-            drawPlayer(g, xOne, groundOne, colorOne);
-            drawPlayer(g, xTwo, groundTwo, colorTwo);
+            drawPlayer(g, xOne, groundOne, colorOne, headOne);
+            drawPlayer(g, xTwo, groundTwo, colorTwo, headTwo);
             if (playerOne.isKicking()) {
-                drawFoot(g, xOne, groundOne, 1);
+                drawFoot(g, xOne, groundOne, 1, playerOne.getKickTime());
             }
             if (playerTwo.isKicking()) {
-                drawFoot(g, xTwo, groundTwo, -1);
+                drawFoot(g, xTwo, groundTwo, -1, playerTwo.getKickTime());
             }
             drawLife(g, playerOne, ground);
             drawLife(g, playerTwo, ground);
@@ -300,15 +322,35 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
      * @param ground es la altura del suelo
      */
     private void drawGoals(Graphics g, int width, int ground) {
+        Graphics2D g2 = (Graphics2D) g;
         int top = ground - DOPOSoccer.GOAL_HEIGHT;
         int rightStart = width - DOPOSoccer.GOAL_WIDTH - 1;
-        g.setColor(LINES);
-        g.drawRect(0, top, DOPOSoccer.GOAL_WIDTH, DOPOSoccer.GOAL_HEIGHT);
-        g.drawRect(rightStart, top, DOPOSoccer.GOAL_WIDTH, DOPOSoccer.GOAL_HEIGHT);
-        for (int y = top + 20; y < ground; y += 20){
+        g.setColor(NET_FILL);
+        g.fillRect(0, top, DOPOSoccer.GOAL_WIDTH, DOPOSoccer.GOAL_HEIGHT);
+        g.fillRect(rightStart, top, DOPOSoccer.GOAL_WIDTH + 1, DOPOSoccer.GOAL_HEIGHT);
+        g.setColor(NET_LINES);
+        for (int y = top + 16; y < ground; y += 16) {
             g.drawLine(0, y, DOPOSoccer.GOAL_WIDTH, y);
             g.drawLine(rightStart, y, width - 1, y);
-        } 
+        }
+        for (int x = 15; x < DOPOSoccer.GOAL_WIDTH; x += 15) {
+            g.drawLine(x, top, x, ground);
+            g.drawLine(rightStart + x, top, rightStart + x, ground);
+        }
+        for (int pass = 0; pass < 2; pass++) {
+            if (pass == 0) {
+                g2.setStroke(new BasicStroke(9));
+                g.setColor(POST_SHADOW);
+            } else {
+                g2.setStroke(new BasicStroke(5));
+                g.setColor(LINES);
+            }
+            g.drawLine(DOPOSoccer.GOAL_WIDTH, top, DOPOSoccer.GOAL_WIDTH, ground);
+            g.drawLine(0, top, DOPOSoccer.GOAL_WIDTH, top);
+            g.drawLine(rightStart, top, rightStart, ground);
+            g.drawLine(rightStart, top, width, top);
+        }
+        g2.setStroke(new BasicStroke(1));
     }
 
     /**
@@ -335,6 +377,14 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
         g.fillOval(x - 40, ground - 105, 80, 110);
     }
 
+    private Image loadHead(String name) {
+        String file = name.toLowerCase().replace(" ", "");
+        Image head = new ImageIcon("imagenes/cabezas/" + file + ".png").getImage();
+        if (head.getWidth(null) > 0) {
+            return new ImageIcon(head.getScaledInstance(60, 60, Image.SCALE_SMOOTH)).getImage();
+        }
+        return null;
+    }
     /**
      * dibuja un jugador sobre el campo
      * @param g es el pincel
@@ -342,28 +392,34 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
      * @param ground es la altura donde pisa el jugador
      * @param color es el color de la camiseta del jugador
      */
-    private void drawPlayer(Graphics g, int x, int ground, Color color) {
+    private void drawPlayer(Graphics g, int x, int ground, Color color, Image head) {
         g.setColor(color);
         g.fillRect(x - 15, ground - 40, 30, 40);
-        g.fillOval(x - 25, ground - 90, 50, 50);
-        g.setColor(Color.BLACK);
-        g.drawOval(x - 25, ground - 90, 50, 50);
+        if (head != null) {
+            g.drawImage(head, x - 30, ground - 95, this);
+        } else {
+            g.fillOval(x - 25, ground - 90, 50, 50);
+            g.setColor(Color.BLACK);
+            g.drawOval(x - 25, ground - 90, 50, 50);
+        }
     }
 
     /**
-     * dibuja el pie estirado del jugador al patear
+     * dibuja la pierna del jugador al patear, sube y baja con la patada
      * @param g es el pincel
      * @param x es la posicion horizontal del jugador
      * @param ground es la altura de donde esta pisando el jugador
      * @param direction es 1 si patea a der, y -1 si patea a la izq
+     * @param kickTime son los pasos que le quedan a la patada
      */
-    private void drawFoot(Graphics g, int x, int ground, int direction) {
+    private void drawFoot(Graphics g, int x, int ground, int direction, int kickTime) {
+        double progress = (double) (Player.KICK_TIME - kickTime) / Player.KICK_TIME;
+        double angle = Math.toRadians(-35 + 70 * Math.sin(Math.PI * progress));
+        int hipY = ground - 12;
+        int footX = x + direction * (int) (25 * Math.cos(angle));
+        int footY = hipY - (int) (25 * Math.sin(angle));
         g.setColor(Color.BLACK);
-        if (direction > 0) {
-            g.fillRect(x + 15, ground - 20, 30, 10);
-        } else {
-            g.fillRect(x - 45, ground - 20, 30, 10);
-        }
+        g.fillOval(footX - 12, footY - 7, 24, 14);
     }
 
     /**
@@ -404,16 +460,20 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
     }
 
     /**
-     * es el que dibuja el balon
+     * es el que dibuja el balon, con la imagen balon.png, o un circulo blanco si no existe
      * @param g es el pincel
      * @param x es la posicion horizontal del centro del balon
      * @param y es la posicion vertical del centro del balon
      */
     private void drawBall(Graphics g, int x, int y) {
+        if (ballImage != null) {
+            g.drawImage(ballImage, x - 16, y - 16, this);
+            return;
+        }
         g.setColor(Color.WHITE);
-        g.fillOval(x - 12, y - 12, 24, 24);
+        g.fillOval(x - 16, y - 16, 32, 32);
         g.setColor(Color.BLACK);
-        g.drawOval(x - 12, y - 12, 24, 24);
+        g.drawOval(x - 16, y - 16, 32, 32);
     }
 
     /**

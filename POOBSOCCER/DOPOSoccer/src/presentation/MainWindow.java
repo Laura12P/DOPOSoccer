@@ -11,6 +11,7 @@ import domain.DOPOSoccer;
 import domain.DOPOSoccerException;
 import domain.Log;
 import domain.Player;
+import domain.Progress;
 
 /**
  * Ventana principal de POOBSoccer.
@@ -62,6 +63,10 @@ public class MainWindow extends JFrame {
     private MachinePanel machinePanel;
     private String machine;
     private String currentScreen;
+    private String profileOne;
+    private String profileTwo;
+    private Player[] rosterOne;
+    private Player[] rosterTwo;
 
     /**
      * Crea la ventana con las pantallas.
@@ -186,11 +191,82 @@ public class MainWindow extends JFrame {
         playerOne = one;
         playerTwo = two;
         machine = null;
+        profileOne = null;
+        profileTwo = null;
+    }
+    /**
+     * guarda el perfil de la persona que juega de un lado, para darle los puntos del partido
+     * se llama despues de savePlayers
+     * @param number es 1 si juega del lado izq, y 2 si juega del der
+     * @param name es el nombre del perfil
+     * @param roster son los jugadores del perfil, con sus puntos
+     */
+    public void saveProfile(int number, String name, Player[] roster) {
+        if (number == 1) {
+            profileOne = name;
+            rosterOne = roster;
+        } else {
+            profileTwo = name;
+            rosterTwo = roster;
+        }
+    }
+
+    /**
+     * retorna el nombre del perfil del lado dado, o null si no tiene perfil
+     * @param number es 1 si es el lado izq, y 2 si es el der
+     */
+    public String getProfile(int number) {
+        if (number == 1) {
+            return profileOne;
+        }
+        return profileTwo;
+    }
+
+    /**
+     * retorna los puntos del jugador que escogio ese lado
+     * @param number es 1 si es el lado izq, y 2 si es el der
+     */
+    public int getPoints(int number) {
+        if (number == 1) {
+            return playerOne.getPoints();
+        }
+        return playerTwo.getPoints();
+    }
+
+    /**
+     * le suma los puntos del partido al jugador de cada perfil y guarda el perfil
+     * el lado sin perfil no guarda nada
+     * si no se puede guardar anota la excepcion en el log
+     * @param oneWon es true si gano el jugador de la izq, y false si gano el de la der
+     */
+    public void addMatchPoints(boolean oneWon) {
+        try {
+            if (profileOne != null) {
+                if (oneWon) {
+                    playerOne.addPoints(DOPOSoccer.WIN_POINTS);
+                } else {
+                    playerOne.addPoints(DOPOSoccer.LOSE_POINTS);
+                }
+                Progress.save(Progress.fileName(profileOne), rosterOne);
+            }
+            if (profileTwo != null) {
+                if (oneWon) {
+                    playerTwo.addPoints(DOPOSoccer.LOSE_POINTS);
+                } else {
+                    playerTwo.addPoints(DOPOSoccer.WIN_POINTS);
+                }
+                Progress.save(Progress.fileName(profileTwo), rosterTwo);
+            }
+        } catch (DOPOSoccerException e) {
+            Log.record(e);
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
     /**
      * guarda el tipo de maquina que va a manejar el jugador de la der
      * @param profile es el tipo de maquina que se escogio
      */
-    }
     public void saveMachine(String profile) {
         machine = profile;
     }
@@ -258,6 +334,8 @@ public class MainWindow extends JFrame {
                 DOPOSoccer soccer = DOPOSoccer.open(chooser.getSelectedFile().getPath());
                 playerOne = soccer.getPlayerOne();
                 playerTwo = soccer.getPlayerTwo();
+                profileOne = null;
+                profileTwo = null;
                 if (soccer.isMachine(2)) {
                     machine = soccer.getMachineName();
                 } else {

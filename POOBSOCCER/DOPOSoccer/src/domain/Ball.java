@@ -11,7 +11,7 @@ import java.util.Random;
  * @author Laura Juliana Parra Velandia
  */
 public class Ball extends GameObject {
-    private static final int RADIUS = 12;
+    private static final int RADIUS = 16;
     private static final double GRAVITY = 0.25;
     private static final double BOUNCE = 0.8;
     private static final double FRICTION = 0.99;

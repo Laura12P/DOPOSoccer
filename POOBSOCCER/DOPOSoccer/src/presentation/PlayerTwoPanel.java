@@ -12,6 +12,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import domain.Progress;
+
 /**
  * pantalla donde se escoge el jugador de cada uno
  * entre los del pais que eligio antes
@@ -93,6 +95,16 @@ public class PlayerTwoPanel extends JPanel implements ActionListener {
     }
 
     /**
+     * dice si los dos jugadores escribieron el mismo perfil
+     * @return true si los dos tienen perfil y es el mismo
+     */
+    private boolean sameProfile() {
+        String one = selectorOne.getProfile();
+        String two = selectorTwo.getProfile();
+        return one != null && two != null && Progress.fileName(one).equals(Progress.fileName(two));
+    }
+
+    /**
      * Guarda los jugadores elegidos y sigue a los controles, o vuelve a elegir paises.
      *
      * @param e evento del click
@@ -100,7 +112,15 @@ public class PlayerTwoPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == readyButton) {
             if (selectorOne.hasSelected() && selectorTwo.hasSelected()) {
+                selectorOne.loadProfile();
+                selectorTwo.loadProfile();
+                if (sameProfile()) {
+                    JOptionPane.showMessageDialog(this, "los perfiles deben ser distintos");
+                    return;
+                }
                 window.savePlayers(selectorOne.getSelected(), selectorTwo.getSelected());
+                window.saveProfile(1, selectorOne.getProfile(), selectorOne.getRoster());
+                window.saveProfile(2, selectorTwo.getProfile(), selectorTwo.getRoster());
                 window.showScreen(MainWindow.CONTROLS_TWO);
             } else {
                 JOptionPane.showMessageDialog(this, "deben elegir jugador");

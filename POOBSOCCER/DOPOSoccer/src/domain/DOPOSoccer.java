@@ -26,7 +26,7 @@ public class DOPOSoccer implements Serializable {
     public static final String[] MACHINES = {"Torpe", "Ofensiva", "Defensiva", "Experta"};
     private static final int SIDE_MARGIN = 25;
     private static final int BALL_START_HEIGHT = 200;
-    private static final int BALL_RADIUS = 12;
+    private static final int BALL_RADIUS = 16;
     private static final int PLAYER_WIDTH = 50;
     private static final double KICK_SPEED_X = 10;
     private static final double KICK_SPEEED_Y = 7; 
