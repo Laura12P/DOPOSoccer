@@ -30,6 +30,7 @@ public class StartPanel extends JPanel implements ActionListener {
     private MainWindow window;
     private JLabel labelTitle;
     private JButton playButton;
+    private JButton openButton;
 
     /**
      * Crea la pantalla de inicio.
@@ -74,8 +75,22 @@ public class StartPanel extends JPanel implements ActionListener {
         center.setBorder(BorderFactory.createEmptyBorder(70,0,0,0));
         center.add(playButton);
 
+        openButton = new JButton("Abrir partida");
+        openButton.setFont(new Font("Arial", Font.BOLD, 20));
+        openButton.setPreferredSize(new Dimension(220, 50));
+        openButton.setBackground(Color.WHITE);
+        openButton.setForeground(Color.BLACK);
+        openButton.setBorder(BorderFactory.createLineBorder(Color.WHITE, 3));
+        openButton.setFocusPainted(false);
+        openButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottom.setOpaque(false);
+        bottom.setBorder(BorderFactory.createEmptyBorder(30,0,0,0));
+        bottom.add(openButton);
+
         panel.add(labelTitle);
         panel.add(center);
+        panel.add(bottom);
         add(panel, BorderLayout.CENTER);
     }
 
@@ -84,6 +99,7 @@ public class StartPanel extends JPanel implements ActionListener {
      */
     private void prepareActions() {
         playButton.addActionListener(this);
+        openButton.addActionListener(this);
     }
 
     /**
@@ -95,6 +111,8 @@ public class StartPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == playButton) {
             window.showScreen(MainWindow.MODE);
+        } else if (e.getSource() == openButton) {
+            window.openMatch();
         }
     }
 }

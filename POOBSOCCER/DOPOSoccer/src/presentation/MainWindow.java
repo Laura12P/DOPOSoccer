@@ -2,10 +2,14 @@ package presentation;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import domain.DOPOSoccer;
+import domain.DOPOSoccerException;
+import domain.Log;
 import domain.Player;
 
 /**
@@ -241,6 +245,49 @@ public class MainWindow extends JFrame {
         validate();
         gamePanel.prepareMatch(playerOne.copy(), playerTwo.copy(), byGoals, amount, machine);
         gamePanel.begin();
+    }
+
+    /**
+     * Pregunta que archivo abrir y sigue la partida que estaba guardada.
+     * Si no se puede abrir muestra el mensaje y lo anota en el log.
+     */
+    public void openMatch() {
+        JFileChooser chooser = new JFileChooser();
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            try {
+                DOPOSoccer soccer = DOPOSoccer.open(chooser.getSelectedFile().getPath());
+                playerOne = soccer.getPlayerOne();
+                playerTwo = soccer.getPlayerTwo();
+                if (soccer.isMachine(2)) {
+                    machine = soccer.getMachineName();
+                } else {
+                    machine = null;
+                }
+                leaveFullScreen();
+                cards.show(container, GAME);
+                currentScreen = GAME;
+                validate();
+                int extraWidth = getWidth() - gamePanel.getFieldWidth();
+                int extraHeight = getHeight() - gamePanel.getFieldHeight();
+                lastWidth = soccer.getWidth() + extraWidth;
+                lastHeight = soccer.getHeight() + extraHeight;
+                lastByGoals = soccer.isByGoals();
+                if (lastByGoals) {
+                    lastAmount = soccer.getGoalTarget();
+                } else {
+                    lastAmount = Math.max(1, soccer.getSeconds() / 60);
+                }
+                lastFullScreen = false;
+                setSize(lastWidth, lastHeight);
+                setLocationRelativeTo(null);
+                validate();
+                gamePanel.loadMatch(soccer);
+                gamePanel.begin();
+            } catch (DOPOSoccerException e) {
+                Log.record(e);
+                JOptionPane.showMessageDialog(this, e.getMessage());
+            }
+        }
     }
 
     /**

@@ -1,11 +1,13 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * objeto que tiene una posicion en la cancha
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
-public abstract class GameObject {
+public abstract class GameObject implements Serializable {
     protected double x;
     protected double height;
 

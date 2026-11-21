@@ -1,4 +1,12 @@
 package domain;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 /**
  * fachada del juego
  * usando patron de fachada
@@ -10,7 +18,7 @@ package domain;
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
-public class DOPOSoccer {
+public class DOPOSoccer implements Serializable {
     public static final int GOAL_WIDTH = 60;
     public static final int GOAL_HEIGHT = 160;
     public static final int WIN_POINTS = 100;
@@ -364,6 +372,12 @@ public class DOPOSoccer {
         return machine.getName();
     }
     /**
+     * retorna la altura de la cancha
+     */
+    public int getHeight() {
+        return height;
+    }
+    /**
      * retorna el ancho de la cancha
      */
     public int getWidth() {
@@ -374,5 +388,43 @@ public class DOPOSoccer {
      */
     public int getGoalTarget() {
         return goalTarget;
+    }
+
+    /**
+     * guarda la partida en un archivo
+     * @param fileName es el nombre del archivo donde se guarda
+     * @throws DOPOSoccerException si no se pudo guardar el archivo
+     */
+    public void save(String fileName) throws DOPOSoccerException {
+        try {
+            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
+            out.writeObject(this);
+            out.close();
+        } catch (IOException e) {
+            throw new DOPOSoccerException(DOPOSoccerException.CANNOT_SAVE);
+        }
+    }
+
+    /**
+     * abre una partida guardada en un archivo
+     * @param fileName es el nombre del archivo que se abre
+     * @return la partida que estaba guardada
+     * @throws DOPOSoccerException si no existe el archivo o no es una partida valida
+     */
+    public static DOPOSoccer open(String fileName) throws DOPOSoccerException {
+        try {
+            ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
+            DOPOSoccer soccer = (DOPOSoccer) in.readObject();
+            in.close();
+            return soccer;
+        } catch (FileNotFoundException e) {
+            throw new DOPOSoccerException(DOPOSoccerException.FILE_NOT_FOUND);
+        } catch (IOException e) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_FILE);
+        } catch (ClassNotFoundException e) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_FILE);
+        } catch (ClassCastException e) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_FILE);
+        }
     }
 }

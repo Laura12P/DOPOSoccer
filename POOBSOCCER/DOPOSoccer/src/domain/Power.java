@@ -1,12 +1,14 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * tiro de poder de un personaje
  * sale cuando el jugador con el poder activo toca el balon
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
-public abstract class Power {
+public abstract class Power implements Serializable {
     private static final int FRAMES_PER_SECOND = 60;
     private String name;
     private int damage;

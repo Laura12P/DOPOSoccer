@@ -1,5 +1,7 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * tipo de jugador que maneja el computador
  * segun el tipo de maquina el jugador tiene ciertas
@@ -7,7 +9,7 @@ package domain;
  * @author jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
-public abstract class Machine {
+public abstract class Machine implements Serializable {
     protected static final int MARGIN = 6;
     protected static final int BEHIND = 30;
     protected static final int REACH = 45;

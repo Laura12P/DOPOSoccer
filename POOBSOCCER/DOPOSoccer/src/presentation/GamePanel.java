@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -15,6 +16,7 @@ import javax.swing.SwingUtilities;
 import domain.DOPOSoccer;
 import domain.Player;
 import domain.DOPOSoccerException;
+import domain.Log;
 /**
  * es la pantalla del juego
  * el tiempo
@@ -126,6 +128,7 @@ public class GamePanel extends JPanel implements ActionListener {
             try {
                 soccer.setMachine(machine);
             } catch (DOPOSoccerException e) {
+                Log.record(e);
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }
         }
@@ -155,6 +158,53 @@ public class GamePanel extends JPanel implements ActionListener {
         if (soccer.isOver()) {
             endMatch();
         }
+    }
+
+    /**
+     * pregunta donde guardar y guarda la partida que se esta jugando
+     * si no se puede guardar muestra el mensaje y lo anota en el log
+     */
+    private void saveMatch() {
+        JFileChooser chooser = new JFileChooser();
+        if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            String path = chooser.getSelectedFile().getPath();
+            if (!path.endsWith(".dat")) {
+                path = path + ".dat";
+            }
+            try {
+                soccer.save(path);
+                JOptionPane.showMessageDialog(this, "Partida guardada");
+            } catch (DOPOSoccerException e) {
+                Log.record(e);
+                JOptionPane.showMessageDialog(this, e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * sigue una partida que se abrio de un archivo
+     * @param loaded es la partida que estaba guardada
+     */
+    public void loadMatch(DOPOSoccer loaded) {
+        soccer = loaded;
+        showTime();
+        timer.restart();
+        field.setSoccer(soccer);
+        updateScoreboard();
+    }
+
+    /**
+     * @return el ancho de la cancha
+     */
+    public int getFieldWidth() {
+        return field.getWidth();
+    }
+
+    /**
+     * @return la altura de la cancha desde el suelo al techo
+     */
+    public int getFieldHeight() {
+        return field.getFieldHeight();
     }
 
     /**
@@ -219,6 +269,8 @@ public class GamePanel extends JPanel implements ActionListener {
                 }
                 field.resume();
                 finished = true;
+            } else if (answer == PauseMenu.SAVE) {
+                saveMatch();
             } else if (answer == PauseMenu.CONTROLS) {
                 JOptionPane.showMessageDialog(this, CONTROLS_TEXT, "Controles",
                         JOptionPane.PLAIN_MESSAGE);

@@ -1,11 +1,13 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * revisa los choques entre jugadores, pies y balon
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
-public class Collisions {
+public class Collisions implements Serializable {
     private static final int PLAYER_WIDTH = 50;
     private static final int PLAYER_HEIGHT = 90;
     private static final int FOOT_REACH = 35;

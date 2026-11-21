@@ -26,10 +26,11 @@ public class PauseMenu extends JDialog implements ActionListener {
     public static final int RESTART = 1;
     public static final int CONFIG = 2;
     public static final int CONTROLS = 3;
-    public static final int MODE = 4;
-    public static final int HOME = 5;
+    public static final int SAVE = 4;
+    public static final int MODE = 5;
+    public static final int HOME = 6;
     private static final String[] OPTIONS = {"Continuar", "Reiniciar partido", "Configuracion",
-        "Controles", "Modo de juego", "Inicio"};
+        "Controles", "Guardar partida", "Modo de juego", "Inicio"};
     private static final Color GOLD = new Color(230, 190, 40);
 
     private JButton[] buttons;
@@ -76,7 +77,7 @@ public class PauseMenu extends JDialog implements ActionListener {
         }
         panel.add(list, BorderLayout.CENTER);
         setContentPane(panel);
-        setSize(340, 480);
+        setSize(340, 540);
         setResizable(false);
     }
 
