@@ -160,10 +160,12 @@ public class GamePanel extends JPanel implements ActionListener {
     }
 
     /**
-     * pregunta donde guardar y guarda la partida que se esta jugando
+     * pregunta donde guardar y guarda la partida 
+     * 
      */
     private void saveMatch() {
-        JFileChooser chooser = new JFileChooser();
+        soccer.setSeries(window.getSeries());
+        JFileChooser chooser = new JFileChooser(MainWindow.matchesFolder());
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             String path = chooser.getSelectedFile().getPath();
             if (!path.endsWith(".dat")) {
@@ -204,7 +206,13 @@ public class GamePanel extends JPanel implements ActionListener {
     public int getFieldHeight() {
         return field.getFieldHeight();
     }
-
+    /**
+     * para los relojes del partido
+     */
+    public void stopMatch() {
+        timer.stop();
+        field.stop();
+    }
     /**
      * le da el teclado a la cancha para que los jugadores respondan
      */
@@ -226,11 +234,9 @@ public class GamePanel extends JPanel implements ActionListener {
         if (winner == soccer.getPlayerOne()) {
             number = 1;
         }
-        if (!window.finishMatch(number, result)) {
-            JOptionPane.showMessageDialog(this, "Gana " + result);
-            window.showScreen(MainWindow.START);
-        }
+        window.finishMatch(number, result);
     }
+
 
     /**
      * muestra en la barra de arriba la meta de goles, el tiempo que queda o el gol de oro

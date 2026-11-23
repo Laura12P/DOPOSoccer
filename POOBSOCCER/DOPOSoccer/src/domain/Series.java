@@ -20,6 +20,7 @@ public class Series implements Serializable {
     private int[] points;
     private int matches;
     private int winner;
+    private int rematches;
     
     /**
      * CONSTRUCTOR
@@ -47,6 +48,7 @@ public class Series implements Serializable {
         points = new int[2];
         matches = 0;
         winner = 0;
+        rematches = 0;
     }
     /**
      * @param amount es la cantidad de partidos
@@ -96,6 +98,28 @@ public class Series implements Serializable {
         if (profiles[index] != null) {
             profiles[index].addPoints(amount);
         }
+    }
+    /**
+     * revancha
+     * se hace un partido mas despues que alguien gano 
+     * @param matchWinner es 1 si gano izq o 2 si gano der
+     */
+    public void recordRematch(int matchWinner) {
+        int won = matchWinner -1;
+        int lost = 1 - won;
+        matches = matches + 1;
+        rematches = rematches + 1;
+        wins[won] = wins[won] + 1;
+        givePoints(won, DOPOSoccer.WIN_POINTS);
+        givePoints(lost, DOPOSoccer.LOSE_POINTS);
+    }
+    /**
+     * cambia el perfil de un jugador por el del archivo al abrir una partida
+     * @param number es 1 el de la izq y 2 el de la der
+     * @param profile es el perfil que se abrio
+     */
+    public void updateProfile(int number, Profile profile) {
+        profiles[number - 1] = profile;
     }
     /**
      * retorna true si alguien ya gano la serie
@@ -149,6 +173,12 @@ public class Series implements Serializable {
     public boolean isByPoints() {
         return byPoints;
     }
+    /**
+     * retorna cuantas revanchas se han jugado
+     */
+     public int getRematches() {
+        return rematches;
+     }
     /**
      * retorna los puntos necesarios para ganar
      */

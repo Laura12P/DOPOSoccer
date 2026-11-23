@@ -19,7 +19,6 @@ public class ProfileTest {
     private static final String OTHER = "otroPerfilDePrueba";
     private MainWindow window;
 
-
     @Before
     public void setUp() {
         window = new MainWindow();
@@ -27,6 +26,7 @@ public class ProfileTest {
 
     @After
     public void tearDown() {
+        window.stopMatch();
         window.dispose();
         new File(Progress.fileName(NAME)).delete();
         new File(Progress.fileName(OTHER)).delete();

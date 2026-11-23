@@ -157,4 +157,27 @@ public class SeriesTest {
             assertEquals(DOPOSoccerException.INVALID_SERIES, e.getMessage());
         }
     }
+        @Test
+    public void shouldGivePointsInARematchWithoutChangingTheWinner() throws DOPOSoccerException {
+        Series series = new Series("Jero", jero, "Laura", laura, false, 1);
+        series.recordMatch(1);
+        series.recordRematch(2);
+        assertEquals(1, series.getWinner());
+        assertEquals(1, series.getRematches());
+        assertEquals(2, series.getMatches());
+        assertEquals(1, series.getWins(2));
+        assertEquals(125, series.getPoints(2));
+        assertEquals(125, laura.getPoints());
+    }
+
+    @Test
+    public void shouldUseTheProfileThatWasOpened() throws DOPOSoccerException {
+        Series series = new Series("Jero", jero, "Laura", laura, false, 3);
+        Profile opened = new Profile("Jero");
+        series.updateProfile(1, opened);
+        series.recordMatch(1);
+        assertEquals(100, opened.getPoints());
+        assertEquals(0, jero.getPoints());
+    }
+    
 }

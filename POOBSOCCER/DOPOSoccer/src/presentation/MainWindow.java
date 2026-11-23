@@ -2,6 +2,7 @@ package presentation;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -40,6 +41,7 @@ public class MainWindow extends JFrame {
     public static final String SERIES = "serie";
     public static final String UPGRADE = "mejoras";
     public static final String RESULTS = "resultados";
+     public static final String MATCHES_FOLDER = "partidas";
     
     // dimensiones de la ventana
     private static final int WIDTH = 900;
@@ -291,50 +293,98 @@ public class MainWindow extends JFrame {
         gamePanel.prepareMatch(one, two, byGoals, amount, machine);
         gamePanel.begin();
     }
-
-    /**
-     * Pregunta que archivo abrir y sigue la partida que estaba guardada.
+        /**
+     * Pregunta que archivo abrir 
      */
     public void openMatch() {
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser(matchesFolder());
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                DOPOSoccer soccer = DOPOSoccer.open(chooser.getSelectedFile().getPath());
-                playerOne = soccer.getPlayerOne();
-                playerTwo = soccer.getPlayerTwo();
-                profileOne = null;
-                profileTwo = null;
-                series = null;
-                if (soccer.isMachine(2)) {
-                    machine = soccer.getMachineName();
-                } else {
-                    machine = null;
-                }
-                leaveFullScreen();
-                cards.show(container, GAME);
-                currentScreen = GAME;
-                validate();
-                int extraWidth = getWidth() - gamePanel.getFieldWidth();
-                int extraHeight = getHeight() - gamePanel.getFieldHeight();
-                lastWidth = soccer.getWidth() + extraWidth;
-                lastHeight = soccer.getHeight() + extraHeight;
-                lastByGoals = soccer.isByGoals();
-                if (lastByGoals) {
-                    lastAmount = soccer.getGoalTarget();
-                } else {
-                    lastAmount = Math.max(1, soccer.getSeconds() / 60);
-                }
-                lastFullScreen = false;
-                setSize(lastWidth, lastHeight);
-                setLocationRelativeTo(null);
-                validate();
-                gamePanel.loadMatch(soccer);
-                gamePanel.begin();
-            } catch (DOPOSoccerException e) {
-                Log.record(e);
-                JOptionPane.showMessageDialog(this, e.getMessage());
-            }
+            openMatch(chooser.getSelectedFile().getPath());
         }
+    }
+
+    /**
+     * Abre la partida guardada 
+     * @param path es la ruta del archivo de la partida
+     */
+    public void openMatch(String path) {
+        try {
+            DOPOSoccer soccer = DOPOSoccer.open(path);
+            playerOne = soccer.getPlayerOne();
+            playerTwo = soccer.getPlayerTwo();
+            if (soccer.isMachine(2)) {
+                machine = soccer.getMachineName();
+            } else {
+                machine = null;
+            }
+            series = soccer.getSeries();
+            profileOne = null;
+            profileTwo = null;
+            if (series != null) {
+                profileOne = reloadProfile(1);
+                profileTwo = reloadProfile(2);
+            }
+            leaveFullScreen();
+            cards.show(container, GAME);
+            currentScreen = GAME;
+            validate();
+            int extraWidth = getWidth() - gamePanel.getFieldWidth();
+            int extraHeight = getHeight() - gamePanel.getFieldHeight();
+            lastWidth = soccer.getWidth() + extraWidth;
+            lastHeight = soccer.getHeight() + extraHeight;
+            lastByGoals = soccer.isByGoals();
+            if (lastByGoals) {
+                lastAmount = soccer.getGoalTarget();
+            } else {
+                lastAmount = Math.max(1, soccer.getSeconds() / 60);
+            }
+            lastFullScreen = false;
+            setSize(lastWidth, lastHeight);
+            setLocationRelativeTo(null);
+            validate();
+            gamePanel.loadMatch(soccer);
+            gamePanel.begin();
+        } catch (DOPOSoccerException e) {
+            Log.record(e);
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
+    /**
+     * vuelve a leer del archivo el perfil de un jugador de la serie abierta,
+     * @param number es 1 para el jugador 1 y 2 para el jugador 2
+     * retorna el perfil del jugador, o null si juega sin perfil
+     */
+    private Profile reloadProfile(int number) {
+        Profile profile = series.getProfile(number);
+        if (profile == null) {
+            return null;
+        }
+        try {
+            Profile saved = Progress.open(Progress.fileName(profile.getName()));
+            series.updateProfile(number, saved);
+            return saved;
+        } catch (DOPOSoccerException e) {
+            return profile;
+        }
+    }
+
+    /**
+     * @return la carpeta donde se guardan las partidas, la crea si no existe
+     */
+    public static File matchesFolder() {
+        File folder = new File(MATCHES_FOLDER);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+        return folder;
+    }
+
+    /**
+     * para el partido que se esta jugando, por ejemplo antes de cerrar la ventana
+     */
+    public void stopMatch() {
+        gamePanel.stopMatch();
     }
 
     /**
@@ -462,11 +512,19 @@ public class MainWindow extends JFrame {
      * @param result es el personaje que gano y el marcador del partido
      * retorna false si no hay serie
      */
-    public boolean finishMatch(int winner, String result) {
+    public void finishMatch(int winner, String result) {
         if (series == null) {
-            return false;
+            try {
+                series = new Series(nameOf(1), profileOne, nameOf(2), profileTwo, false, 1);
+            } catch (DOPOSoccerException e) {
+                Log.record(e);
+            }
         }
-        series.recordMatch(winner);
+        if (series.isOver()) {
+            series.recordRematch(winner);
+        } else {
+            series.recordMatch(winner);
+        }
         try {
             for (int i = 1; i <= 2; i++) {
                 Profile profile = getProfile(i);
@@ -478,9 +536,8 @@ public class MainWindow extends JFrame {
             Log.record(e);
             JOptionPane.showMessageDialog(this, e.getMessage());
         }
-        resultsPanel.showResults(series, series.getName(winner) + " gana con " + result);
+        resultsPanel.showResults(series, winner, result);
         showScreen(RESULTS);
-        return true;
     }
 
     /**

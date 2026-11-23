@@ -125,7 +125,6 @@ public class ConfigPanel extends JPanel implements ActionListener {
             all[i].setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
         paintOptions();
-
         JLabel sizeLabel = new JLabel("Resolucion de la cancha", SwingConstants.CENTER);
         sizeLabel.setFont(new Font("Comic Sans MS", Font.BOLD, 26));
         sizeLabel.setForeground(Color.WHITE);
@@ -139,7 +138,6 @@ public class ConfigPanel extends JPanel implements ActionListener {
         fullScreenBox.setOpaque(false);
         fullScreenBox.setFocusPainted(false);
         fullScreenBox.setHorizontalAlignment(SwingConstants.CENTER);
-
         JPanel center = new JPanel(new GridLayout(3, 1, 0, 15));
         center.setOpaque(false);
         center.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
@@ -147,7 +145,6 @@ public class ConfigPanel extends JPanel implements ActionListener {
         center.add(quantity);
         center.add(sizeBlock);
         panel.add(center, BorderLayout.CENTER);
-
         backButton = new JButton("Volver");
         backButton.setFont(new Font("Comic Sans MS", Font.BOLD, 16));
         backButton.setBackground(Color.WHITE);
@@ -155,7 +152,7 @@ public class ConfigPanel extends JPanel implements ActionListener {
         backButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         backButton.setFocusPainted(false);
         backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        playButton = new JButton("siguiente");
+        playButton = new JButton("Siguiente");
         playButton.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
         playButton.setBackground(GOLD);
         playButton.setForeground(Color.BLACK);
@@ -237,7 +234,7 @@ public class ConfigPanel extends JPanel implements ActionListener {
                     size = i;
                 }
             }
-            window.startMatch(goalsButton.isSelected(), value, WIDTHS[size], HEIGHTS[size],
+            window.saveConfig(goalsButton.isSelected(), value, WIDTHS[size], HEIGHTS[size],
                 fullScreenBox.isSelected());
         } else if (e.getSource() == backButton) {
             window.showScreen(backScreen);

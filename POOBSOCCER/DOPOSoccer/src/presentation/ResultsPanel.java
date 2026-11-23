@@ -32,11 +32,13 @@ public class ResultsPanel extends JPanel implements ActionListener {
     private MainWindow window;
     private JLabel title;
     private JLabel matchResult;
+    private JLabel pointsInfo;
     private JLabel seriesInfo;
     private JLabel[][] cells;
     private JButton nextButton;
     private JButton restartButton;
     private JButton changeButton;
+    private JButton rematchButton;
     private JButton homeButton;
 
     /**
@@ -69,8 +71,9 @@ public class ResultsPanel extends JPanel implements ActionListener {
         title.setFont(new Font("Comic Sans MS", Font.BOLD, 44));
         title.setForeground(GOLD);
         panel.add(title, BorderLayout.NORTH);
-        matchResult = createLabel(" ", 22, Color.WHITE);
-        seriesInfo = createLabel(" ", 18, Color.WHITE);
+        matchResult = createLabel(" ", 22, GOLD);
+        pointsInfo = createLabel(" ", 18, Color.WHITE);
+        seriesInfo = createLabel(" ", 16, Color.WHITE);
         JPanel table = new JPanel(new GridLayout(3, HEADERS.length, 4, 4));
         table.setBackground(Color.WHITE);
         table.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
@@ -89,25 +92,28 @@ public class ResultsPanel extends JPanel implements ActionListener {
                 table.add(cells[i][j]);
             }
         }
-        JPanel texts = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel texts = new JPanel(new GridLayout(3, 1, 0, 4));
         texts.setOpaque(false);
         texts.add(matchResult);
+        texts.add(pointsInfo);
         texts.add(seriesInfo);
         JPanel center = new JPanel(new BorderLayout(0, 15));
         center.setOpaque(false);
-        center.setBorder(BorderFactory.createEmptyBorder(10, 0, 70, 0));
+        center.setBorder(BorderFactory.createEmptyBorder(10, 0, 50, 0));
         center.add(texts, BorderLayout.NORTH);
         center.add(table, BorderLayout.CENTER);
         panel.add(center, BorderLayout.CENTER);
         nextButton = createButton("Siguiente partido", GOLD);
         restartButton = createButton("Reiniciar serie", GOLD);
         changeButton = createButton("Cambiar serie", Color.WHITE);
+        rematchButton = createButton("Revancha", GOLD);
         homeButton = createButton("Inicio", Color.WHITE);
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         bottom.setOpaque(false);
         bottom.add(homeButton);
         bottom.add(changeButton);
         bottom.add(restartButton);
+        bottom.add(rematchButton);
         bottom.add(nextButton);
         panel.add(bottom, BorderLayout.SOUTH);
         add(panel, BorderLayout.CENTER);
@@ -118,7 +124,6 @@ public class ResultsPanel extends JPanel implements ActionListener {
      * @param text es lo que dice
      * @param size es el tamano de la letra
      * @param color es el color de la letra
-     * retorna la etiqueta creada
      */
     private JLabel createLabel(String text, int size, Color color) {
         JLabel label = new JLabel(text, SwingConstants.CENTER);
@@ -131,7 +136,6 @@ public class ResultsPanel extends JPanel implements ActionListener {
      * crea un boton con el estilo de la pantalla
      * @param text es lo que dice el boton
      * @param color es el color de fondo
-     * retorna el boton creado
      */
     private JButton createButton(String text, Color color) {
         JButton button = new JButton(text);
@@ -153,16 +157,22 @@ public class ResultsPanel extends JPanel implements ActionListener {
         nextButton.addActionListener(this);
         restartButton.addActionListener(this);
         changeButton.addActionListener(this);
+        rematchButton.addActionListener(this);
         homeButton.addActionListener(this);
     }
 
     /**
-     * llena la pantalla con el resultado del ultimo partido y como va la serie
+     * muestra  el resultado del ultimo partido
      * @param series es la serie que se esta jugando
-     * @param result es el texto con el ganador y el marcador del partido
+     * @param winner es 1 si gano el jugador 1 y 2 si gano el jugador 2
+     * @param result es el personaje que gano y el marcador del partido
      */
-    public void showResults(Series series, String result) {
-        matchResult.setText(result);
+    public void showResults(Series series, int winner, String result) {
+        int loser = 3 - winner;
+        matchResult.setText("Ganador: " + series.getName(winner) + " con " + result);
+        pointsInfo.setText(series.getName(winner) + " ahora tiene " + series.getPoints(winner)
+                + " puntos y " + series.getName(loser) + " se queda con "
+                + series.getPoints(loser) + " puntos");
         for (int i = 1; i <= 2; i++) {
             Profile profile = series.getProfile(i);
             cells[i][0].setText(series.getName(i));
@@ -174,13 +184,20 @@ public class ResultsPanel extends JPanel implements ActionListener {
                 cells[i][3].setText("" + profile.getPoints());
             }
         }
-        if (series.isByPoints()) {
-            seriesInfo.setText("Serie a " + series.getTarget() + " puntos");
-        } else {
-            seriesInfo.setText("Serie al mejor de " + series.getTarget() + " partidos");
-        }
         boolean over = series.isOver();
+        String info;
+        if (series.isByPoints()) {
+            info = "Serie a " + series.getTarget() + " puntos";
+        } else {
+            info = "Serie al mejor de " + series.getTarget() + " partidos";
+        }
         if (over) {
+            info = info + ", la gano " + series.getName(series.getWinner());
+        }
+        seriesInfo.setText(info);
+        if (series.getRematches() > 0) {
+            title.setText("REVANCHA " + series.getRematches());
+        } else if (over) {
             title.setText(series.getName(series.getWinner()).toUpperCase() + " GANA LA SERIE");
         } else {
             title.setText("PARTIDO " + series.getMatches());
@@ -188,10 +205,11 @@ public class ResultsPanel extends JPanel implements ActionListener {
         nextButton.setVisible(!over);
         restartButton.setVisible(over);
         changeButton.setVisible(over);
+        rematchButton.setVisible(over);
     }
 
     /**
-     * siguiente partido va a las mejoras
+     * siguiente partido y revancha 
      * @param e es el evento del click
      */
     public void actionPerformed(ActionEvent e) {
@@ -201,6 +219,8 @@ public class ResultsPanel extends JPanel implements ActionListener {
             window.restartSeries();
         } else if (e.getSource() == changeButton) {
             window.changeSeries();
+        } else if (e.getSource() == rematchButton) {
+            window.showUpgrades();
         } else {
             window.showScreen(MainWindow.START);
         }

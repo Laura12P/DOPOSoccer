@@ -43,6 +43,7 @@ public class DOPOSoccer implements Serializable {
     private boolean byGoals;
     private int goalTarget;
     private Machine machine;
+    private Series series;
     /**
      * CONSTRUCTOR
      * prepara el partido con los jugadores en su lugar
@@ -389,6 +390,19 @@ public class DOPOSoccer implements Serializable {
     public int getGoalTarget() {
         return goalTarget;
     }
+    /**
+     * guarda la serie que se esta jugando
+     * @param series es la serie 
+     */
+     public void setSeries(Series series) {
+        this.series = series;
+     }
+     /**
+      * retorna la serie que se guardo
+      */
+     public Series getSeries() {
+        return series;
+     }
 
     /**
      * guarda la partida en un archivo

@@ -7,12 +7,13 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- * pruebas de guardar y abrir el progreso de los jugadores
+ * pruebas de guardar y abrir el progreso de una persona: sus puntos y estadisticas
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
 public class ProgressTest {
     private static final String FILE = "pruebaprogreso.dat";
+
 
     @After
     public void tearDown() {
@@ -20,20 +21,32 @@ public class ProgressTest {
     }
 
     @Test
-    public void shouldOpenTheSavedPoints() throws Exception {
-        Player one = new Player("Son", "Corea del Sur", 1, 1, 1, 1, new BlueAura());
-        Player two = new Player("Osimhen", "Nigeria", 2, 3, 4, 5, new Tornado());
-        one.addPoints(DOPOSoccer.WIN_POINTS);
-        two.addPoints(DOPOSoccer.LOSE_POINTS);
-        Progress.save(FILE, new Player[] {one, two});
-        Player[] opened = Progress.open(FILE);
-        assertEquals(2, opened.length);
-        assertEquals("Son", opened[0].getName());
-        assertEquals(DOPOSoccer.WIN_POINTS, opened[0].getPoints());
-        assertEquals("Nigeria", opened[1].getCountry());
-        assertEquals(DOPOSoccer.LOSE_POINTS, opened[1].getPoints());
-        assertEquals(4, opened[1].getJump());
+    public void shouldOpenTheSavedPointsAndStats() throws Exception {
+        Profile laura = new Profile("Laura");
+        laura.addPoints(DOPOSoccer.WIN_POINTS * 6);
+        laura.upgrade(Profile.JUMP);
+        Progress.save(FILE, laura);
+        Profile opened = Progress.open(FILE);
+        assertEquals("Laura", opened.getName());
+        assertEquals(DOPOSoccer.WIN_POINTS, opened.getPoints());
+        assertEquals(2, opened.getLevel(Profile.JUMP));
+        assertEquals(1, opened.getLevel(Profile.SPEED));
+        assertEquals(1000, opened.getUpgradeCost());
     }
+
+    @Test
+    public void shouldNotOpenASavedMatchAsAProfile() throws Exception {
+        Player one = new Player("Son", "Corea del Sur", 1, 1, 1, 1, new BlueAura());
+        Player two = new Player("Osimhen", "Nigeria", 1, 1, 1, 1, new Tornado());
+        new DOPOSoccer(one, two, 880, 480).save(FILE);
+        try {
+            Progress.open(FILE);
+            fail("deberia lanzar la excepcion");
+        } catch (DOPOSoccerException e) {
+            assertEquals(DOPOSoccerException.INVALID_FILE, e.getMessage());
+        }
+    }
+
 
     @Test
     public void shouldBuildTheFileNameOfAProfile() {
@@ -41,6 +54,7 @@ public class ProgressTest {
         assertEquals("perfil_laura2.dat", Progress.fileName(" LAURA 2! "));
         assertEquals(Progress.fileName("Laura"), Progress.fileName("laura"));
     }
+
 
     @Test
     public void shouldNotAcceptAProfileWithoutLetters() {
@@ -58,6 +72,7 @@ public class ProgressTest {
         }
     }
 
+    
     @Test
     public void shouldNotOpenInvalidFile() throws Exception {
         FileWriter writer = new FileWriter(FILE);
@@ -71,13 +86,11 @@ public class ProgressTest {
         }
     }
 
-    /**
-     * guardar en una carpeta que no existe debe lanzar la excepcion
-     */
+
     @Test
     public void shouldNotSaveInMissingFolder() {
         try {
-            Progress.save("carpetaquenoexiste/progreso.dat", new Player[0]);
+            Progress.save("carpetaquenoexiste/progreso.dat", new Profile("Laura"));
             fail("debia lanzar excepcion");
         } catch (DOPOSoccerException e) {
             assertEquals(DOPOSoccerException.CANNOT_SAVE, e.getMessage());

@@ -173,9 +173,9 @@ public class DOPOSoccerTest {
 
     @Test
     public void shouldPlayTheMinutesChosen() {
-        DOPOSoccer long_match = new DOPOSoccer(one, two, WIDTH, HEIGHT, false, 3);
-        assertEquals(180, long_match.getSeconds());
-        assertFalse(long_match.isByGoals());
+        DOPOSoccer longmatch = new DOPOSoccer(one, two, WIDTH, HEIGHT, false, 3);
+        assertEquals(180, longmatch.getSeconds());
+        assertFalse(longmatch.isByGoals());
     }
 
     @Test

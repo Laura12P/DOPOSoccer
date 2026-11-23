@@ -15,16 +15,18 @@ import domain.Progress;
 import domain.Series;
 
 /**
- * pruebas de las pantallas de la series
+ * pruebas de las pantallas de la serie
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
 public class SeriesScreensTest {
     private static final String JERO = "jeroDePrueba";
     private static final String LAURA = "lauraDePrueba";
+    private static final String MATCH = "partidaDePrueba.dat";
     private MainWindow window;
     private Profile jero;
     private Profile laura;
+
 
     @Before
     public void setUp() {
@@ -36,12 +38,21 @@ public class SeriesScreensTest {
         window.saveProfile(2, laura);
         window.saveConfig(true, 1, 900, 600, false);
     }
+
+
     @After
     public void tearDown() {
+        window.stopMatch();
         window.dispose();
         new File(Progress.fileName(JERO)).delete();
         new File(Progress.fileName(LAURA)).delete();
+        new File(MATCH).delete();
     }
+
+    /**
+     * espera un momento a que el reloj de la cancha mueva el juego
+     * @param screen es la pantalla que se espera
+     */
     private void waitFor(String screen) throws InterruptedException {
         for (int i = 0; i < 60 && !screen.equals(window.getCurrentScreen()); i++) {
             Thread.sleep(50);
@@ -144,12 +155,15 @@ public class SeriesScreensTest {
     @Test
     public void shouldShowTheTableAfterEachMatch() throws DOPOSoccerException {
         window.startSeries(false, 3);
-        assertTrue(window.finishMatch(1, "Son (Corea Del Sur)   1 - 0"));
+        window.finishMatch(1, "Son (Corea Del Sur)   1 - 0");
         assertEquals(MainWindow.RESULTS, window.getCurrentScreen());
         assertEquals(100, Progress.open(Progress.fileName(JERO)).getPoints());
         ResultsPanel panel = new ResultsPanel(window);
-        panel.showResults(window.getSeries(), JERO + " gana con Son (Corea Del Sur)   1 - 0");
+        panel.showResults(window.getSeries(), 1, "Son (Corea Del Sur)   1 - 0");
         assertTrue(Finder.hasLabel(panel, "PARTIDO 1"));
+        assertTrue(Finder.hasLabel(panel, "Ganador: " + JERO + " con Son (Corea Del Sur)   1 - 0"));
+        assertTrue(Finder.hasLabel(panel, JERO + " ahora tiene 100 puntos y " + LAURA
+                + " se queda con 25 puntos"));
         assertTrue(Finder.hasLabel(panel, "Serie al mejor de 3 partidos"));
         assertTrue(Finder.hasLabel(panel, "Puntos para mejoras"));
         assertTrue(Finder.hasLabel(panel, "100"));
@@ -163,9 +177,9 @@ public class SeriesScreensTest {
         window.finishMatch(2, "Haaland (Noruega)   0 - 1");
         assertTrue(window.getSeries().isOver());
         ResultsPanel panel = new ResultsPanel(window);
-        panel.showResults(window.getSeries(), LAURA + " gana con Haaland (Noruega)   0 - 1");
+        panel.showResults(window.getSeries(), 2, "Haaland (Noruega)   0 - 1");
         assertTrue(Finder.hasLabel(panel, LAURA.toUpperCase() + " GANA LA SERIE"));
-        assertTrue(Finder.hasLabel(panel, "Serie a 100 puntos"));
+        assertTrue(Finder.hasLabel(panel, "Serie a 100 puntos, la gano " + LAURA));
         assertTrue(Finder.click(panel, "Reiniciar serie"));
         assertEquals(MainWindow.UPGRADE, window.getCurrentScreen());
         assertEquals(0, window.getSeries().getMatches());
@@ -182,14 +196,55 @@ public class SeriesScreensTest {
         window.startSeries(false, 3);
         window.finishMatch(2, "Haaland (Noruega)   0 - 1");
         ResultsPanel panel = new ResultsPanel(window);
-        panel.showResults(window.getSeries(), "Jugador 2 gana con Haaland (Noruega)   0 - 1");
+        panel.showResults(window.getSeries(), 2, "Haaland (Noruega)   0 - 1");
         assertTrue(Finder.hasLabel(panel, "-"));
         assertTrue(Finder.hasLabel(panel, "Jugador 2"));
     }
 
     @Test
-    public void shouldNotUseTheTableWithoutSeries() {
-        assertFalse(window.finishMatch(1, "Son (Corea Del Sur)   1 - 0"));
+    public void shouldMakeASeriesOfOneMatchWhenThereWasNone() {
+        window.finishMatch(1, "Son (Corea Del Sur)   1 - 0");
+        assertEquals(MainWindow.RESULTS, window.getCurrentScreen());
+        assertTrue(window.getSeries().isOver());
+        assertEquals(1, window.getSeries().getWinner());
+    }
+
+    @Test
+    public void shouldPlayARematchAfterTheSeries() throws DOPOSoccerException {
+        window.startSeries(false, 1);
+        window.finishMatch(1, "Son (Corea Del Sur)   1 - 0");
+        ResultsPanel panel = new ResultsPanel(window);
+        panel.showResults(window.getSeries(), 1, "Son (Corea Del Sur)   1 - 0");
+        assertTrue(Finder.click(panel, "Revancha"));
+        assertEquals(MainWindow.UPGRADE, window.getCurrentScreen());
+        window.finishMatch(2, "Haaland (Noruega)   0 - 2");
+        assertEquals(1, window.getSeries().getRematches());
+        assertEquals(1, window.getSeries().getWinner());
+        assertEquals(125, laura.getPoints());
+        panel.showResults(window.getSeries(), 2, "Haaland (Noruega)   0 - 2");
+        assertTrue(Finder.hasLabel(panel, "REVANCHA 1"));
+        assertTrue(Finder.hasLabel(panel, LAURA + " ahora tiene 125 puntos y " + JERO
+                + " se queda con 125 puntos"));
+    }
+
+    @Test
+    public void shouldOpenASavedMatchWithItsSeries() throws DOPOSoccerException {
+        window.startSeries(false, 3);
+        window.finishMatch(1, "Son (Corea Del Sur)   1 - 0");
+        Player one = new Player("Son", "Corea Del Sur", 1, 1, 1, 1, new BlueAura());
+        Player two = new Player("Haaland", "Noruega", 1, 1, 1, 1, new Confusion());
+        DOPOSoccer soccer = new DOPOSoccer(one, two, 880, 480, true, 3);
+        soccer.setSeries(window.getSeries());
+        soccer.save(MATCH);
+        jero.addPoints(500);
+        Progress.save(Progress.fileName(JERO), jero);
+        MainWindow other = new MainWindow();
+        other.openMatch(MATCH);
+        assertEquals(MainWindow.GAME, other.getCurrentScreen());
+        assertEquals(1, other.getSeries().getWins(1));
+        assertEquals(600, other.getProfile(1).getPoints());
+        assertEquals(LAURA, other.getSeries().getName(2));
+        other.dispose();
     }
 
     @Test

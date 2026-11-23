@@ -69,8 +69,14 @@ public class SeriesPanel extends JPanel implements  ActionListener {
         JLabel title = new JLabel("SERIE", SwingConstants.CENTER);
         title.setFont(new Font("Comic Sans MS", Font.BOLD, 56));
         title.setForeground(GOLD);
-        panel.add(title, BorderLayout.NORTH);
-
+        JLabel question = new JLabel("Como quieren jugar la serie?", SwingConstants.CENTER);
+        question.setFont(new Font("Comic Sans MS", Font.BOLD, 24));
+        question.setForeground(Color.WHITE);
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(title, BorderLayout.CENTER);
+        top.add(question, BorderLayout.SOUTH);
+        panel.add(top, BorderLayout.NORTH);
         ButtonGroup group = new ButtonGroup();
         JPanel formats = new JPanel(new GridLayout(1, Series.BEST_OF.length + 1, 15, 0));
         formats.setOpaque(false);
