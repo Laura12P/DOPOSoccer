@@ -22,6 +22,7 @@ import domain.Illusion;
 import domain.Lightning;
 import domain.Log;
 import domain.Player;
+import domain.Profile;
 import domain.Progress;
 import domain.Tornado;
 
@@ -29,7 +30,8 @@ import java.util.Random;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 /**
- * fila con los jugadores del pais elegido, para que cada jugador escoja el suyo
+ * fila con los jugadores del pais elegido
+ * para que cada jugador escoja el suyo
  * muestra la ficha del jugador elegido
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
@@ -58,8 +60,7 @@ public class PlayerSelector extends JPanel implements ActionListener {
     private ArrayList<Player> available;
     private ArrayList<JButton> buttons;
     private Player selected;
-    private Player[] roster;
-    private String profileName;
+    private Profile person;
 
     /**
      * CONSTRUCTOR
@@ -69,27 +70,14 @@ public class PlayerSelector extends JPanel implements ActionListener {
      */
     public PlayerSelector(String player) {
         selected = null;
-        profileName = null;
-        roster = newRoster();
+        person = null;
         available = new ArrayList<Player>();
         buttons = new ArrayList<JButton>();
         prepareElements(player);
     }
 
     /**
-     * crea los jugadores de un perfil nuevo, sin puntos
-     * @return los jugadores con sus estadisticas iniciales
-     */
-    private static Player[] newRoster() {
-        Player[] players = new Player[ALL.length];
-        for (int i = 0; i < ALL.length; i++) {
-            players[i] = ALL[i].copy();
-        }
-        return players;
-    }
-
-    /**
-     * ubica el nombre del jugador, el perfil, la fila de botones y la ficha
+     * ubica el nombre del jugador
      * @param player es el texto que identifica al jugador
      */
     private void prepareElements(String player) {
@@ -134,10 +122,10 @@ public class PlayerSelector extends JPanel implements ActionListener {
         buttons.clear();
         selected = null;
         profile.setText("ningun jugador elegido");
-        for (int i = 0; i < roster.length; i++) {
-            if (roster[i].getCountry().equals(country)) {
-                JButton button = new JButton(roster[i].getName());
-                String file = roster[i].getName().toLowerCase().replace(" ", "");
+        for (int i = 0; i < ALL.length; i++) {
+            if (ALL[i].getCountry().equals(country)) {
+                JButton button = new JButton(ALL[i].getName());
+                String file = ALL[i].getName().toLowerCase().replace(" ", "");
                 Image photo = new ImageIcon("imagenes/jugadores/" + file + ".png").getImage();
                 button.setIcon(new ImageIcon(photo.getScaledInstance(70, 70, Image.SCALE_SMOOTH)));
                 button.setVerticalTextPosition(JButton.BOTTOM);
@@ -145,7 +133,7 @@ public class PlayerSelector extends JPanel implements ActionListener {
                 button.setBackground(NORMAL);
                 button.setFocusPainted(false);
                 button.addActionListener(this);
-                available.add(roster[i]);
+                available.add(ALL[i]);
                 buttons.add(button);
                 row.add(button);
             }
@@ -155,62 +143,45 @@ public class PlayerSelector extends JPanel implements ActionListener {
     }
 
     /**
-     * abre el perfil que esta escrito, o lo crea si no existe, con los jugadores en cero
-     * si no hay nada escrito se queda sin perfil y no se guardan puntos
-     * siempre lee el archivo, para no perder los puntos que gano en otra pantalla
-     * si el archivo no sirve o el nombre no es valido muestra el mensaje
+     * abre el perfil que esta escrito
      */
     public void loadProfile() {
         String text = profileField.getText().trim();
         String file = Progress.fileName(text);
-        Player[] loaded = null;
+        person = null;
         if (file != null) {
             try {
-                loaded = Progress.open(file);
+                person = Progress.open(file);
             } catch (DOPOSoccerException e) {
                 if (!DOPOSoccerException.FILE_NOT_FOUND.equals(e.getMessage())) {
                     Log.record(e);
                     JOptionPane.showMessageDialog(this, e.getMessage());
                 }
+                person = new Profile(text);
             }
         } else if (!text.equals("")) {
             JOptionPane.showMessageDialog(this, "el perfil debe tener letras o numeros");
         }
-        if (loaded == null || loaded.length != ALL.length) {
-            loaded = newRoster();
-        }
-        roster = loaded;
-        if (file == null) {
-            profileName = null;
-        } else {
-            profileName = text;
-        }
-        for (int i = 0; i < available.size(); i++) {
-            for (int j = 0; j < roster.length; j++) {
-                if (roster[j].getName().equals(available.get(i).getName())) {
-                    available.set(i, roster[j]);
-                }
-            }
-        }
         if (selected != null) {
-            for (int j = 0; j < roster.length; j++) {
-                if (roster[j].getName().equals(selected.getName())) {
-                    selected = roster[j];
-                }
-            }
             showSelected();
         }
     }
 
     /**
-     * muestra la ficha del jugador elegido, con los puntos si tiene perfil
-     * la ficha queda al lado del jugador elegido, a la izq o a la der
-     * siempre ocupa dos lineas para que los botones no cambien de tamano
+     * muestra la ficha del jugador elegido
      */
     private void showSelected() {
         String points = "Sin perfil, no guarda puntos";
-        if (profileName != null) {
-            points = "Puntos: " + selected.getPoints();
+        int speed = selected.getSpeed();
+        int jump = selected.getJump();
+        int kick = selected.getKick();
+        int survival = selected.getSurvival();
+        if (person != null) {
+            points = "Puntos: " + person.getPoints();
+            speed = person.getLevel(Profile.SPEED);
+            jump = person.getLevel(Profile.JUMP);
+            kick = person.getLevel(Profile.KICK);
+            survival = person.getLevel(Profile.SURVIVAL);
         }
         String side = "left";
         profile.setHorizontalAlignment(SwingConstants.LEFT);
@@ -220,16 +191,15 @@ public class PlayerSelector extends JPanel implements ActionListener {
         }
         profile.setText("<html><div align='" + side + "'>" + selected.getName() + " - "
                 + selected.getCountry() + "  Poder: " + selected.getPower().getName()
-                + "<br>Velocidad: " + selected.getSpeed()
-                + "  Salto: " + selected.getJump()
-                + "  Patada: " + selected.getKick()
-                + "  Vida: " + selected.getSurvival()
+                + "<br>Velocidad: " + speed
+                + "  Salto: " + jump
+                + "  Patada: " + kick
+                + "  Vida: " + survival
                 + "  " + points + "</div></html>");
     }
 
     /**
-     * si se oprime enter en el perfil lo abre, si se da click a un jugador lo marca,
-     * desmarca el otro y muestra su ficha
+     * si se oprime enter en el perfil lo abre
      * @param e es el evento cuando se da click
      */
     public void actionPerformed(ActionEvent e) {
@@ -251,7 +221,7 @@ public class PlayerSelector extends JPanel implements ActionListener {
 
     /**
      * dice si el jugador ya escogio personaje
-     * @return es true si ya hay un personaje elegido
+     * retorna es true si ya hay un personaje elegido
      */
     public boolean hasSelected() {
         return selected != null;
@@ -259,14 +229,14 @@ public class PlayerSelector extends JPanel implements ActionListener {
 
     /**
      * devuelve el personaje que se escogio
-     * @return es el personaje elegido
+     * retorna es el personaje elegido
      */
     public Player getSelected() {
         return selected;
     }
 
     /**
-     * escribe el nombre del perfil en el cuadro de texto, se usa en las pruebas
+     * escribe el nombre del perfil en el cuadro de texto
      * @param name es el nombre del perfil
      */
     void writeProfile(String name) {
@@ -274,22 +244,15 @@ public class PlayerSelector extends JPanel implements ActionListener {
     }
 
     /**
-     * @return el nombre del perfil que se abrio, o null si juega sin perfil
+     * retorna el perfil que se abrio
      */
-    public String getProfile() {
-        return profileName;
+    public Profile getProfile() {
+        return person;
     }
 
     /**
-     * @return los jugadores del perfil, con sus puntos
-     */
-    public Player[] getRoster() {
-        return roster;
-    }
-
-    /**
-     * escoge un jugador cualquiera, para el que controla la maquina
-     * @return es un jugador escogido al azar
+     * escoge un jugador cualquiera
+     * retorna el  jugador escogido al azar
      */
     public static Player atRandom() {
         Random random = new Random();

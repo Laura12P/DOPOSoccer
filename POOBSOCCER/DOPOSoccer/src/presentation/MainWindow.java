@@ -11,7 +11,9 @@ import domain.DOPOSoccer;
 import domain.DOPOSoccerException;
 import domain.Log;
 import domain.Player;
+import domain.Profile;
 import domain.Progress;
+import domain.Series;
 
 /**
  * Ventana principal de POOBSoccer.
@@ -35,6 +37,9 @@ public class MainWindow extends JFrame {
     public static final String PLAYER_TWO = "jugadorDos";
     public static final String CONFIG = "configuracion";
     public static final String MACHINE = "maquina";
+    public static final String SERIES = "serie";
+    public static final String UPGRADE = "mejoras";
+    public static final String RESULTS = "resultados";
     
     // dimensiones de la ventana
     private static final int WIDTH = 900;
@@ -63,10 +68,12 @@ public class MainWindow extends JFrame {
     private MachinePanel machinePanel;
     private String machine;
     private String currentScreen;
-    private String profileOne;
-    private String profileTwo;
-    private Player[] rosterOne;
-    private Player[] rosterTwo;
+    private Profile profileOne;
+    private Profile profileTwo;
+    private SeriesPanel seriesPanel;
+    private UpgradePanel upgradePanel;
+    private ResultsPanel resultsPanel;
+    private Series series;
 
     /**
      * Crea la ventana con las pantallas.
@@ -111,6 +118,12 @@ public class MainWindow extends JFrame {
         container.add(playerOnePanel, PLAYER_ONE);
         machinePanel = new MachinePanel(this);
         container.add(machinePanel, MACHINE);
+        seriesPanel = new SeriesPanel(this);
+        container.add(seriesPanel, SERIES);
+        upgradePanel = new UpgradePanel(this);
+        container.add(upgradePanel, UPGRADE);
+        resultsPanel = new ResultsPanel(this);
+        container.add(resultsPanel, RESULTS);
     }
 
     /**
@@ -183,7 +196,6 @@ public class MainWindow extends JFrame {
 
     /**
      * Guarda los jugadores que se escogieron para el partido.
-     *
      * @param one jugador del lado izquierdo
      * @param two jugador del lado derecho
      */
@@ -195,72 +207,27 @@ public class MainWindow extends JFrame {
         profileTwo = null;
     }
     /**
-     * guarda el perfil de la persona que juega de un lado, para darle los puntos del partido
-     * se llama despues de savePlayers
+     * guarda el perfil de la persona que juega de un ladon y le da puntos
      * @param number es 1 si juega del lado izq, y 2 si juega del der
-     * @param name es el nombre del perfil
-     * @param roster son los jugadores del perfil, con sus puntos
+     * @param profile es el perfil con sus puntos y estadisticas
      */
-    public void saveProfile(int number, String name, Player[] roster) {
+    public void saveProfile(int number, Profile profile) {
         if (number == 1) {
-            profileOne = name;
-            rosterOne = roster;
+            profileOne = profile;
         } else {
-            profileTwo = name;
-            rosterTwo = roster;
+            profileTwo = profile;
         }
     }
 
     /**
-     * retorna el nombre del perfil del lado dado, o null si no tiene perfil
      * @param number es 1 si es el lado izq, y 2 si es el der
+     * retorna el perfil del lado dado
      */
-    public String getProfile(int number) {
+    public Profile getProfile(int number) {
         if (number == 1) {
             return profileOne;
         }
         return profileTwo;
-    }
-
-    /**
-     * retorna los puntos del jugador que escogio ese lado
-     * @param number es 1 si es el lado izq, y 2 si es el der
-     */
-    public int getPoints(int number) {
-        if (number == 1) {
-            return playerOne.getPoints();
-        }
-        return playerTwo.getPoints();
-    }
-
-    /**
-     * le suma los puntos del partido al jugador de cada perfil y guarda el perfil
-     * el lado sin perfil no guarda nada
-     * si no se puede guardar anota la excepcion en el log
-     * @param oneWon es true si gano el jugador de la izq, y false si gano el de la der
-     */
-    public void addMatchPoints(boolean oneWon) {
-        try {
-            if (profileOne != null) {
-                if (oneWon) {
-                    playerOne.addPoints(DOPOSoccer.WIN_POINTS);
-                } else {
-                    playerOne.addPoints(DOPOSoccer.LOSE_POINTS);
-                }
-                Progress.save(Progress.fileName(profileOne), rosterOne);
-            }
-            if (profileTwo != null) {
-                if (oneWon) {
-                    playerTwo.addPoints(DOPOSoccer.LOSE_POINTS);
-                } else {
-                    playerTwo.addPoints(DOPOSoccer.WIN_POINTS);
-                }
-                Progress.save(Progress.fileName(profileTwo), rosterTwo);
-            }
-        } catch (DOPOSoccerException e) {
-            Log.record(e);
-            JOptionPane.showMessageDialog(this, e.getMessage());
-        }
     }
 
     /**
@@ -278,7 +245,6 @@ public class MainWindow extends JFrame {
     }
     /**
      * Muestra la pantalla de configuracion del partido.
-     *
      * @param backScreen pantalla de controles a la que vuelve el boton volver
      */
     public void showConfig(String backScreen) {
@@ -296,8 +262,7 @@ public class MainWindow extends JFrame {
 
     /**
      * Prepara el partido con copias de los jugadores y muestra la cancha.
-     *
-     * @param byGoals true si el partido es por goles, false si es por tiempo
+     * @param byGoals true si el partido es por goles
      * @param amount goles para ganar, o minutos del partido
      * @param width es el anchp de la ventana
      * @param height es el alto de la ventana
@@ -319,13 +284,16 @@ public class MainWindow extends JFrame {
         cards.show(container, GAME);
         currentScreen = GAME;
         validate();
-        gamePanel.prepareMatch(playerOne.copy(), playerTwo.copy(), byGoals, amount, machine);
+        Player one = playerOne.copy();
+        Player two = playerTwo.copy();
+        applyProfile(profileOne, one);
+        applyProfile(profileTwo, two);
+        gamePanel.prepareMatch(one, two, byGoals, amount, machine);
         gamePanel.begin();
     }
 
     /**
      * Pregunta que archivo abrir y sigue la partida que estaba guardada.
-     * Si no se puede abrir muestra el mensaje y lo anota en el log.
      */
     public void openMatch() {
         JFileChooser chooser = new JFileChooser();
@@ -336,6 +304,7 @@ public class MainWindow extends JFrame {
                 playerTwo = soccer.getPlayerTwo();
                 profileOne = null;
                 profileTwo = null;
+                series = null;
                 if (soccer.isMachine(2)) {
                     machine = soccer.getMachineName();
                 } else {
@@ -411,5 +380,139 @@ public class MainWindow extends JFrame {
      */
     public boolean isFullScreen() {
         return isUndecorated();
+    }
+
+    /**
+     * guarda la configuracion del partido y va a armar la serie
+     * @param byGoals es true si el partido es por goles y false si es por tiempo
+     * @param amount son los goles para ganar o los minutos del partido
+     * @param width es el ancho de la ventana
+     * @param height es el alto de la ventana
+     * @param fullScreen es true si el partido se juega en pantalla completa
+     */
+    public void saveConfig(boolean byGoals, int amount, int width, int height, boolean fullScreen) {
+        lastByGoals = byGoals;
+        lastAmount = amount;
+        lastWidth = width;
+        lastHeight = height;
+        lastFullScreen = fullScreen;
+        changeSeries();
+    }
+
+    /**
+     * vuelve a la pantalla donde se escoge el tipo de serie
+     */
+    public void changeSeries() {
+        showScreen(SERIES);
+    }
+
+    /**
+     * empieza la serie con los perfiles que se escribieron al escoger los jugadores
+     * @param byPoints es true si la serie es a puntos y false si es al mejor de
+     * @param target son los puntos para ganar, o los partidos del mejor de
+     * @throws DOPOSoccerException si la serie no es valida
+     */
+    public void startSeries(boolean byPoints, int target) throws DOPOSoccerException {
+        series = new Series(nameOf(1), profileOne, nameOf(2), profileTwo, byPoints, target);
+        showUpgrades();
+    }
+
+    /**
+     * empieza otra vez la misma serie, con los mismos jugadores y el mismo tipo
+     */
+    public void restartSeries() {
+        try {
+            startSeries(series.isByPoints(), series.getTarget());
+        } catch (DOPOSoccerException e) {
+            Log.record(e);
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
+    /**
+     * muestra la pantalla de mejoras antes del siguiente partido
+     */
+    public void showUpgrades() {
+        upgradePanel.showSeries(series);
+        showScreen(UPGRADE);
+    }
+
+    /**
+     * compra una mejora para un jugador y guarda su perfil en su archivo
+     * @param number es 1 para el jugador 1 y 2 para el jugador 2
+     * @param stat es la estadistica: Profile.SPEED, KICK, JUMP o SURVIVAL
+     * @throws DOPOSoccerException si no se puede mejorar o no se pudo guardar
+     */
+    public void upgrade(int number, int stat) throws DOPOSoccerException {
+        Profile profile = getProfile(number);
+        profile.upgrade(stat);
+        Progress.save(Progress.fileName(profile.getName()), profile);
+    }
+
+    /**
+     * juega el siguiente partido de la serie con la configuracion guardada
+     */
+    public void playSeriesMatch() {
+        restartMatch();
+    }
+
+    /**
+     * anota el resultado del partido en la serie, guarda los perfiles y muestra la tabla
+     * @param winner es 1 si gano el jugador 1 y 2 si gano el jugador 2
+     * @param result es el personaje que gano y el marcador del partido
+     * retorna false si no hay serie
+     */
+    public boolean finishMatch(int winner, String result) {
+        if (series == null) {
+            return false;
+        }
+        series.recordMatch(winner);
+        try {
+            for (int i = 1; i <= 2; i++) {
+                Profile profile = getProfile(i);
+                if (profile != null) {
+                    Progress.save(Progress.fileName(profile.getName()), profile);
+                }
+            }
+        } catch (DOPOSoccerException e) {
+            Log.record(e);
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+        resultsPanel.showResults(series, series.getName(winner) + " gana con " + result);
+        showScreen(RESULTS);
+        return true;
+    }
+
+    /**
+     * @param number es 1 para el jugador 1 y 2 para el jugador 2
+     * retorna el nombre del perfil
+     */
+    private String nameOf(int number) {
+        Profile profile = getProfile(number);
+        if (profile != null) {
+            return profile.getName();
+        }
+        if (number == 2 && machine != null) {
+            return Series.MACHINE_NAME;
+        }
+        return "Jugador " + number;
+    }
+
+    /**
+     * le pone a un personaje las estadisticas en el perfol
+     * @param profile es el perfil
+     * @param player es el personaje
+     */
+    private void applyProfile(Profile profile, Player player) {
+        if (profile != null) {
+            profile.applyTo(player);
+        }
+    }
+
+    /**
+     * retorna la serie que se esta jugando, o null si no hay
+     */
+    public Series getSeries() {
+        return series;
     }
 }

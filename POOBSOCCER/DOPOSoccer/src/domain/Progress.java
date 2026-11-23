@@ -39,10 +39,10 @@ public class Progress {
      * @param players son los jugadores que se guardan
      * @throws DOPOSoccerException si no se pudo guardar el archivo
      */
-    public static void save(String fileName, Player[] players) throws DOPOSoccerException {
+    public static void save(String fileName, Profile profile) throws DOPOSoccerException {
         try {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
-            out.writeObject(players);
+            out.writeObject(profile);
             out.close();
         } catch (IOException e) {
             throw new DOPOSoccerException(DOPOSoccerException.CANNOT_SAVE);
@@ -55,12 +55,12 @@ public class Progress {
      * @return los jugadores con el progreso que tenian guardado
      * @throws DOPOSoccerException si no existe el archivo o no es un progreso valido
      */
-    public static Player[] open(String fileName) throws DOPOSoccerException {
+    public static Profile open(String fileName) throws DOPOSoccerException {
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
-            Player[] players = (Player[]) in.readObject();
+            Profile profile = (Profile) in.readObject();
             in.close();
-            return players;
+            return profile;
         } catch (FileNotFoundException e) {
             throw new DOPOSoccerException(DOPOSoccerException.FILE_NOT_FOUND);
         } catch (IOException e) {

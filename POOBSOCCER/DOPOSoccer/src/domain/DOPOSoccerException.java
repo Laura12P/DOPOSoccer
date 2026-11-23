@@ -10,6 +10,11 @@ public class DOPOSoccerException extends Exception {
     public static final String FILE_NOT_FOUND = "no se encontro el archivo";
     public static final String INVALID_FILE = "el archivo no es una partida valida";
     public static final String CANNOT_SAVE = "no se pudo guardar el archivo";
+    public static final String NOT_ENOUGH_POINTS = "no tiene puntos suficientes para que esa mejora";
+    public static final String MAX_LEVEL = "esta estadistica ya esta en el nivel maximo";
+    public static final String UNKNOWN_STAT = "no existe esa estadistica";
+    public static final String INVALID_SERIES = "la serie debe ser mejor de 1, 3 o 5, o mas de 0 puntos";
+
 
     /**
      * CONSTRUCTOR

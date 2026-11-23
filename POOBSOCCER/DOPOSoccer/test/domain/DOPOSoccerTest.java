@@ -5,8 +5,6 @@ import org.junit.Test;
 
 /**
  * pruebas de la fachada DOPOSoccer
- * revisa los goles, el tiempo, el gol de oro, los partidos por goles,
- * los puntos, el choque entre jugadores, la patada y los poderes
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
@@ -25,10 +23,7 @@ public class DOPOSoccerTest {
         soccer = new DOPOSoccer(one, two, WIDTH, HEIGHT);
     }
 
-    /**
-     * deja pasar los segundos que se indiquen
-     * @param amount son los segundos que pasan
-     */
+
     private void passSeconds(int amount) {
         for (int i = 0; i < amount; i++) {
             soccer.passSecond();
@@ -356,10 +351,11 @@ public class DOPOSoccerTest {
         soccer.activatePower(1);
         soccer.getBall().place(255, 15);
         soccer.kick(1);
-        two.push(200, 25, 855);
+        two.push(-600, 25, 855);
         for (int i = 0; i < 100; i++) {
             soccer.update();
         }
+        assertEquals(1, one.getGoals());
         assertEquals(two.getMaxLife(), two.getLife());
     }
 }

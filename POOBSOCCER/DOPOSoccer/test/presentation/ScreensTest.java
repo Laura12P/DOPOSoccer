@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import domain.DOPOSoccerException;
+
 /**
  * pruebas de las pantallas de seleccion
  * @author Jeronimo Avila Castillo
@@ -122,7 +124,7 @@ public class ScreensTest {
     }
 
     @Test
-    public void shouldConfigureAndStartTheMatch() {
+    public void shouldConfigureAndStartTheMatch() throws DOPOSoccerException {
         window.savePlayers(PlayerSelector.atRandom(), PlayerSelector.atRandom());
         ConfigPanel panel = new ConfigPanel(window);
         panel.setBackScreen(MainWindow.CONTROLS_ONE);
@@ -134,18 +136,23 @@ public class ScreensTest {
         assertTrue(Finder.click(panel, "Por goles"));
         assertTrue(Finder.click(panel, "Volver"));
         assertEquals(MainWindow.CONTROLS_ONE, window.getCurrentScreen());
-        assertTrue(Finder.click(panel, "Jugar"));
+        assertTrue(Finder.click(panel, "Siguiente"));
+        assertEquals(MainWindow.SERIES, window.getCurrentScreen());
+        window.startSeries(false, 1);
+        window.playSeriesMatch();
         assertEquals(MainWindow.GAME, window.getCurrentScreen());
         assertEquals(1100, window.getWidth());
     }
 
     @Test
-    public void shouldStartTheMatchInFullScreen() {
+    public void shouldStartTheMatchInFullScreen() throws DOPOSoccerException {
         window.savePlayers(PlayerSelector.atRandom(), PlayerSelector.atRandom());
         ConfigPanel panel = new ConfigPanel(window);
         assertTrue(Finder.click(panel, "Por goles"));
         assertTrue(Finder.click(panel, "Pantalla completa"));
-        assertTrue(Finder.click(panel, "Jugar"));
+        assertTrue(Finder.click(panel, "Siguiente"));
+        window.startSeries(false, 1);
+        window.playSeriesMatch();
         assertTrue(window.isFullScreen());
     }
 

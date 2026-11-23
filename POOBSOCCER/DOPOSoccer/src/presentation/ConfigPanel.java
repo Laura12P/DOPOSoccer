@@ -155,7 +155,7 @@ public class ConfigPanel extends JPanel implements ActionListener {
         backButton.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         backButton.setFocusPainted(false);
         backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        playButton = new JButton("Jugar");
+        playButton = new JButton("siguiente");
         playButton.setFont(new Font("Comic Sans MS", Font.BOLD, 20));
         playButton.setBackground(GOLD);
         playButton.setForeground(Color.BLACK);

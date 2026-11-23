@@ -86,7 +86,7 @@ public class PlayerOnePanel extends JPanel implements ActionListener {
             if (selector.hasSelected()) {
                 selector.loadProfile();
                 window.savePlayers(selector.getSelected(), PlayerSelector.atRandom());
-                window.saveProfile(1, selector.getProfile(), selector.getRoster());
+                window.saveProfile(1, selector.getProfile());
                 window.showScreen(MainWindow.MACHINE);
             } else {
                 JOptionPane.showMessageDialog(this, "primero elija un jugador");

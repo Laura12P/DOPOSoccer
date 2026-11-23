@@ -115,7 +115,6 @@ public class GamePanel extends JPanel implements ActionListener {
     
     /**
      * recibe los jugadores del partido y los muestra
-     * se usan copias para que cada partido empiece desde cero
      * @param one es el jugador del lado izquierdo
      * @param two es el jugador del lado derecho
      * @param byGoals es true si el partido es por goles o false por tiempo
@@ -162,7 +161,6 @@ public class GamePanel extends JPanel implements ActionListener {
 
     /**
      * pregunta donde guardar y guarda la partida que se esta jugando
-     * si no se puede guardar muestra el mensaje y lo anota en el log
      */
     private void saveMatch() {
         JFileChooser chooser = new JFileChooser();
@@ -222,22 +220,16 @@ public class GamePanel extends JPanel implements ActionListener {
         timer.stop();
         field.stop();
         Player winner = soccer.getWinner();
-        boolean oneWon = winner == soccer.getPlayerOne();
-        window.addMatchPoints(oneWon);
-        String message = "Gana " + winner.getName() + " (" + winner.getCountry() + ")\n"
+         String result = winner.getName() + " (" + winner.getCountry() + ")   "
                 + soccer.getPlayerOne().getGoals() + " - " + soccer.getPlayerTwo().getGoals();
-        for (int number = 1; number <= 2; number++) {
-            if (window.getProfile(number) != null) {
-                int earned = DOPOSoccer.LOSE_POINTS;
-                if ((number == 1) == oneWon) {
-                    earned = DOPOSoccer.WIN_POINTS;
-                }
-                message = message + "\n" + window.getProfile(number) + ": +" + earned
-                        + " puntos (total " + window.getPoints(number) + ")";
-            }
+        int number = 2;
+        if (winner == soccer.getPlayerOne()) {
+            number = 1;
         }
-        JOptionPane.showMessageDialog(this, message);
-        window.showScreen(MainWindow.START);
+        if (!window.finishMatch(number, result)) {
+            JOptionPane.showMessageDialog(this, "Gana " + result);
+            window.showScreen(MainWindow.START);
+        }
     }
 
     /**

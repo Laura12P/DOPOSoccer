@@ -11,7 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
-
+import domain.Profile;
 import domain.Progress;
 
 /**
@@ -99,9 +99,9 @@ public class PlayerTwoPanel extends JPanel implements ActionListener {
      * @return true si los dos tienen perfil y es el mismo
      */
     private boolean sameProfile() {
-        String one = selectorOne.getProfile();
-        String two = selectorTwo.getProfile();
-        return one != null && two != null && Progress.fileName(one).equals(Progress.fileName(two));
+        Profile one = selectorOne.getProfile();
+        Profile two = selectorTwo.getProfile();
+        return one != null && two != null && Progress.fileName(one.getName()).equals(Progress.fileName(two.getName()));
     }
 
     /**
@@ -119,8 +119,8 @@ public class PlayerTwoPanel extends JPanel implements ActionListener {
                     return;
                 }
                 window.savePlayers(selectorOne.getSelected(), selectorTwo.getSelected());
-                window.saveProfile(1, selectorOne.getProfile(), selectorOne.getRoster());
-                window.saveProfile(2, selectorTwo.getProfile(), selectorTwo.getRoster());
+                window.saveProfile(1, selectorOne.getProfile());
+                window.saveProfile(2, selectorTwo.getProfile());
                 window.showScreen(MainWindow.CONTROLS_TWO);
             } else {
                 JOptionPane.showMessageDialog(this, "deben elegir jugador");

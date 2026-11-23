@@ -14,18 +14,11 @@ import org.junit.Test;
 public class ProgressTest {
     private static final String FILE = "pruebaprogreso.dat";
 
-    /**
-     * borra el archivo que crean las pruebas
-     */
     @After
     public void tearDown() {
         new File(FILE).delete();
     }
 
-    /**
-     * al abrir el progreso deben estar los mismos jugadores con sus puntos
-     * @throws Exception si falla guardar o abrir
-     */
     @Test
     public void shouldOpenTheSavedPoints() throws Exception {
         Player one = new Player("Son", "Corea del Sur", 1, 1, 1, 1, new BlueAura());
@@ -42,9 +35,6 @@ public class ProgressTest {
         assertEquals(4, opened[1].getJump());
     }
 
-    /**
-     * el nombre del archivo solo usa letras y numeros en minuscula
-     */
     @Test
     public void shouldBuildTheFileNameOfAProfile() {
         assertEquals("perfil_laura.dat", Progress.fileName("Laura"));
@@ -52,18 +42,12 @@ public class ProgressTest {
         assertEquals(Progress.fileName("Laura"), Progress.fileName("laura"));
     }
 
-    /**
-     * un nombre sin letras ni numeros no sirve como perfil
-     */
     @Test
     public void shouldNotAcceptAProfileWithoutLetters() {
         assertNull(Progress.fileName("   "));
         assertNull(Progress.fileName("!!"));
     }
 
-    /**
-     * abrir un progreso que no existe debe lanzar la excepcion
-     */
     @Test
     public void shouldNotOpenMissingFile() {
         try {
@@ -74,10 +58,6 @@ public class ProgressTest {
         }
     }
 
-    /**
-     * abrir un archivo que no es un progreso debe lanzar la excepcion
-     * @throws Exception si no se puede crear el archivo
-     */
     @Test
     public void shouldNotOpenInvalidFile() throws Exception {
         FileWriter writer = new FileWriter(FILE);

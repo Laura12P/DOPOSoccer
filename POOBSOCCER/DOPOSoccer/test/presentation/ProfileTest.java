@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import domain.DOPOSoccer;
+import domain.Profile;
 import domain.Progress;
 
 /**
@@ -18,6 +19,7 @@ public class ProfileTest {
     private static final String OTHER = "otroPerfilDePrueba";
     private MainWindow window;
 
+
     @Before
     public void setUp() {
         window = new MainWindow();
@@ -29,70 +31,95 @@ public class ProfileTest {
         new File(Progress.fileName(NAME)).delete();
         new File(Progress.fileName(OTHER)).delete();
     }
-
-    /**
-     * escoge el primer jugador de Nigeria con ese perfil
-     * @param name es el nombre del perfil, o vacio si no tiene
-     * @return el selector con el jugador elegido
-     */
-    private PlayerSelector choose(String name) {
+    private PlayerSelector choose(String name, String country) {
         PlayerSelector selector = new PlayerSelector("jugador 1");
         selector.writeProfile(name);
-        selector.loadCountry("Nigeria");
+        selector.loadCountry(country);
         Finder.clickOption(selector, 0);
         return selector;
     }
 
+    private void playOneMatch(Profile one, Profile two, int winner) throws Exception {
+        window.savePlayers(PlayerSelector.atRandom(), PlayerSelector.atRandom());
+        window.saveProfile(1, one);
+        window.saveProfile(2, two);
+        window.startSeries(false, 1);
+        window.finishMatch(winner, "Son (Corea Del Sur)   1 - 0");
+    }
+
     @Test
     public void shouldPlayWithoutProfile() {
-        PlayerSelector selector = choose("");
+        PlayerSelector selector = choose("", "Nigeria");
         assertNull(selector.getProfile());
         assertTrue(selector.hasSelected());
     }
 
     @Test
+    public void shouldCreateANewProfileWithoutPoints() {
+        Profile profile = choose(NAME, "Nigeria").getProfile();
+        assertEquals(NAME, profile.getName());
+        assertEquals(0, profile.getPoints());
+        assertEquals(1, profile.getLevel(Profile.SPEED));
+    }
+
+    @Test
     public void shouldKeepThePointsOfEachPerson() throws Exception {
-        PlayerSelector one = choose(NAME);
-        assertEquals(NAME, one.getProfile());
-        assertEquals(0, one.getSelected().getPoints());
-        one.getSelected().addPoints(125);
-        Progress.save(Progress.fileName(NAME), one.getRoster());
-        assertEquals(125, choose(NAME).getSelected().getPoints());
-        assertEquals(125, choose(NAME.toUpperCase()).getSelected().getPoints());
-        assertEquals(0, choose(OTHER).getSelected().getPoints());
+        Profile profile = choose(NAME, "Nigeria").getProfile();
+        profile.addPoints(125);
+        Progress.save(Progress.fileName(NAME), profile);
+        assertEquals(125, choose(NAME, "Nigeria").getProfile().getPoints());
+        assertEquals(125, choose(NAME.toUpperCase(), "Nigeria").getProfile().getPoints());
+        assertEquals(0, choose(OTHER, "Nigeria").getProfile().getPoints());
+    }
+
+    @Test
+    public void shouldKeepThePointsWithAnyCharacter() throws Exception {
+        Profile profile = choose(NAME, "Nigeria").getProfile();
+        profile.addPoints(600);
+        profile.upgrade(Profile.KICK);
+        Progress.save(Progress.fileName(NAME), profile);
+        Profile again = choose(NAME, "Noruega").getProfile();
+        assertEquals(100, again.getPoints());
+        assertEquals(2, again.getLevel(Profile.KICK));
     }
 
     @Test
     public void shouldGiveThePointsToThePersonWhoPlayed() throws Exception {
-        PlayerSelector one = choose(NAME);
-        window.savePlayers(one.getSelected(), PlayerSelector.atRandom());
-        window.saveProfile(1, one.getProfile(), one.getRoster());
-        window.addMatchPoints(true);
-        assertEquals(NAME, window.getProfile(1));
+        Profile one = choose(NAME, "Nigeria").getProfile();
+        playOneMatch(one, null, 1);
+        assertSame(one, window.getProfile(1));
         assertNull(window.getProfile(2));
-        assertEquals(DOPOSoccer.WIN_POINTS, window.getPoints(1));
-        assertEquals(DOPOSoccer.WIN_POINTS, choose(NAME).getSelected().getPoints());
-        window.addMatchPoints(false);
-        assertEquals(DOPOSoccer.WIN_POINTS + DOPOSoccer.LOSE_POINTS, choose(NAME).getSelected().getPoints());
+        assertEquals(DOPOSoccer.WIN_POINTS, choose(NAME, "Nigeria").getProfile().getPoints());
+        playOneMatch(choose(NAME, "Nigeria").getProfile(), null, 2);
+        assertEquals(DOPOSoccer.WIN_POINTS + DOPOSoccer.LOSE_POINTS,
+                choose(NAME, "Nigeria").getProfile().getPoints());
     }
 
     @Test
-    public void shouldNotSaveAnythingWithoutProfile() {
-        window.savePlayers(PlayerSelector.atRandom(), PlayerSelector.atRandom());
-        window.addMatchPoints(true);
+    public void shouldNotSaveAnythingWithoutProfile() throws Exception {
+        playOneMatch(null, null, 1);
         assertNull(window.getProfile(1));
         assertNull(window.getProfile(2));
+        assertEquals("Jugador 1", window.getSeries().getName(1));
+        assertEquals(DOPOSoccer.WIN_POINTS, window.getSeries().getPoints(1));
     }
 
     @Test
     public void shouldKeepTwoProfilesApart() throws Exception {
-        PlayerSelector one = choose(NAME);
-        PlayerSelector two = choose(OTHER);
-        window.savePlayers(one.getSelected(), two.getSelected());
-        window.saveProfile(1, one.getProfile(), one.getRoster());
-        window.saveProfile(2, two.getProfile(), two.getRoster());
-        window.addMatchPoints(false);
-        assertEquals(DOPOSoccer.LOSE_POINTS, choose(NAME).getSelected().getPoints());
-        assertEquals(DOPOSoccer.WIN_POINTS, choose(OTHER).getSelected().getPoints());
+        playOneMatch(choose(NAME, "Nigeria").getProfile(), choose(OTHER, "Camerun").getProfile(), 2);
+        assertEquals(DOPOSoccer.LOSE_POINTS, choose(NAME, "Nigeria").getProfile().getPoints());
+        assertEquals(DOPOSoccer.WIN_POINTS, choose(OTHER, "Nigeria").getProfile().getPoints());
+    }
+
+    @Test
+    public void shouldPlayWithTheStatsOfTheProfile() throws Exception {
+        Profile profile = choose(NAME, "Nigeria").getProfile();
+        profile.addPoints(500);
+        profile.upgrade(Profile.SPEED);
+        window.savePlayers(PlayerSelector.atRandom(), PlayerSelector.atRandom());
+        window.saveProfile(1, profile);
+        window.startMatch(true, 99, 900, 600, false);
+        assertEquals(MainWindow.GAME, window.getCurrentScreen());
+        assertEquals(1, PlayerSelector.atRandom().getSpeed());
     }
 }

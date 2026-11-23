@@ -62,6 +62,21 @@ public class Player extends GameObject {
         this.power = power;
         life = getMaxLife();
     }
+    /**
+     * cambia las stats del jugador por las de su perfil
+     * @param speed es la velocidad
+     * @param kick es la patada
+     * @param jump es el salto
+     * @param survival es la vida
+     */
+    public void setStats(int speed, int kick, int jump, int survival) {
+        this.speed = speed;
+        this.kick = kick;
+        this.jump = jump;
+        this.survival = survival;
+        life = getMaxLife();
+
+    }
 
     /**
      * @return el nombre del jugador

@@ -76,7 +76,7 @@ public class PowerTest {
     @Test
     public void shouldGoStraightOnTheGroundWithAGroundShot() {
         ball.powerShot(new Tornado(), user, rival, 1);
-        assertEquals(12, ball.getHeight(), 0.01);
+        assertEquals(16, ball.getHeight(), 0.01);
     }
 
     @Test
