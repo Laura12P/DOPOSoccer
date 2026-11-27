@@ -12,15 +12,8 @@ public class Player extends GameObject {
     private static final int MAX_POWER = 100;
     private static final int POWER_CHARGE = 10;
     private static final int STUN_TIME = 180;
-    private static final int PUSH_SPEED = 10;
-    private static final int KNOCK_LIFT = 15;
-    private static final int NONE = 0;
-    private static final int PUSH = 1;
-    private static final int SHOCK = 2;
-    private static final int KNOCK = 3;
     private static final double BASE_SPEED = 5;
     private static final double BASE_JUMP = 12;
-    private static final int CONFUSE = 4;
 
     private String name;
     private String country;
@@ -37,10 +30,10 @@ public class Player extends GameObject {
     private int powerBar;
     private boolean powerArmed;
     private int stunTime;
-    private int effect;
+    private Effect effect;
     private int effectTime;
-    private int pushDirection;
     private int points;
+    private int penalty;
 
     /**
      * CONSTRUCTOR
@@ -62,6 +55,7 @@ public class Player extends GameObject {
         this.power = power;
         life = getMaxLife();
     }
+
     /**
      * cambia las stats del jugador por las de su perfil
      * @param speed es la velocidad
@@ -75,7 +69,6 @@ public class Player extends GameObject {
         this.jump = jump;
         this.survival = survival;
         life = getMaxLife();
-
     }
 
     /**
@@ -148,14 +141,14 @@ public class Player extends GameObject {
 
     /**
      * mueve al jugador a la izquierda segun su velocidad
-     * si esta electrocutado va a la mitad
+     * el efecto que tenga puede cambiar la velocidad
      * @param limit es lo mas a la izquierda que puede llegar
      */
     public void moveLeft(int limit) {
         if (!isStunned()) {
             double step = BASE_SPEED * (1 + 0.10 * (speed - 1));
-            if (effect == SHOCK) {
-                step = step / 2;
+            if (effect != null) {
+                step = step * effect.getSpeedFactor();
             }
             x = x - step;
             if (x < limit) {
@@ -166,14 +159,14 @@ public class Player extends GameObject {
 
     /**
      * mueve al jugador a la derecha segun su velocidad
-     * si esta electrocutado va a la mitad
+     * el efecto que tenga puede cambiar la velocidad
      * @param limit es lo mas a la derecha que puede llegar
      */
     public void moveRight(int limit) {
         if (!isStunned()) {
             double step = BASE_SPEED * (1 + 0.10 * (speed - 1));
-            if (effect == SHOCK) {
-                step = step / 2;
+            if (effect != null) {
+                step = step * effect.getSpeedFactor();
             }
             x = x + step;
             if (x > limit) {
@@ -200,10 +193,10 @@ public class Player extends GameObject {
 
     /**
      * hace saltar al jugador, solo si esta en el suelo
-     * si esta electrocutado no puede saltar
+     * si el efecto no lo deja saltar, no salta
      */
     public void jump() {
-        if (!isStunned() && effect != SHOCK && height == 0 && verticalSpeed == 0) {
+        if (!isStunned() && (effect == null || effect.canJump()) && height == 0 && verticalSpeed == 0) {
             verticalSpeed = BASE_JUMP * (1 + 0.10 * (jump - 1));
         }
     }
@@ -234,12 +227,10 @@ public class Player extends GameObject {
             }
         }
         if (effectTime > 0) {
-            if (effect == PUSH) {
-                push(pushDirection * PUSH_SPEED, left, right);
-            }
+            effect.step(this, left, right);
             effectTime = effectTime - 1;
             if (effectTime == 0) {
-                effect = NONE;
+                effect = null;
             }
         }
     }
@@ -249,6 +240,15 @@ public class Player extends GameObject {
      */
     public void addGoal() {
         goals = goals + 1;
+    }
+
+    /**
+     * le quita un gol al jugador, nunca baja de cero
+     */
+    public void removeGoal() {
+        if (goals > 0) {
+            goals = goals - 1;
+        }
     }
 
     /**
@@ -267,10 +267,18 @@ public class Player extends GameObject {
     }
 
     /**
-     * @return los puntos que ha ganado el jugador
+     * le quita puntos al jugador, se descuentan de los que gana al terminar el partido
+     * @param amount son los puntos que pierde
+     */
+    public void losePoints(int amount) {
+        penalty = penalty + amount;
+    }
+
+    /**
+     * @return los puntos que gano el jugador en el partido, sin bajar de cero
      */
     public int getPoints() {
-        return points;
+        return Math.max(0, points - penalty);
     }
 
     /**
@@ -361,62 +369,40 @@ public class Player extends GameObject {
      * @return true si no se puede mover, saltar ni patear
      */
     public boolean isStunned() {
-        return stunTime > 0 || effect == KNOCK;
+        return stunTime > 0 || (effect != null && effect.isStunned());
     }
 
     /**
      * @return true si esta electrocutado
      */
     public boolean isShocked() {
-        return effect == SHOCK;
+        return effect instanceof ShockEffect;
     }
 
-        /**
+    /**
      * @return true si esta confundido, o sea con los controles de movimiento invertidos
      */
     public boolean isConfused() {
-        return effect == CONFUSE;
+        return effect != null && effect.invertsControls();
     }
 
     /**
-     * lo confunde: sus controles de movimiento quedan invertidos
-     * reemplaza el efecto anterior
+     * le pone un efecto al jugador, reemplaza el efecto anterior
+     * @param effect es el efecto que recibe
      * @param frames es cuanto dura el efecto, en pasos del reloj
      */
-    public void applyConfusion(int frames) {
-        effect = CONFUSE;
+    public void applyEffect(Effect effect, int frames) {
+        this.effect = effect;
         effectTime = frames;
+        effect.start(this);
     }
 
     /**
-     * lo empuja hacia un lado, reemplaza el efecto anterior
-     * @param direction es 1 si lo empujan a la der, y -1 a la izq
-     * @param frames es cuanto dura el efecto, en pasos del reloj
+     * lanza al jugador al aire
+     * @param speed es la velocidad vertical con la que sale
      */
-    public void applyPush(int direction, int frames) {
-        effect = PUSH;
-        effectTime = frames;
-        pushDirection = direction;
-    }
-
-    /**
-     * lo electrocuta: no salta y va a la mitad de velocidad
-     * reemplaza el efecto anterior
-     * @param frames es cuanto dura el efecto, en pasos del reloj
-     */
-    public void applyShock(int frames) {
-        effect = SHOCK;
-        effectTime = frames;
-    }
-
-    /**
-     * lo lanza al aire y lo deja inconsciente, reemplaza el efecto anterior
-     * @param frames es cuanto dura el efecto, en pasos del reloj
-     */
-    public void applyKnockOut(int frames) {
-        effect = KNOCK;
-        effectTime = frames;
-        verticalSpeed = KNOCK_LIFT;
+    public void launch(double speed) {
+        verticalSpeed = speed;
     }
 
     /**
