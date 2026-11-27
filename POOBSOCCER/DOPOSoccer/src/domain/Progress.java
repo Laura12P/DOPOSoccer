@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.File;
 
 /**
  * guarda y abre el progreso de una persona, los puntos y estadisticas de sus jugadores
@@ -13,6 +14,8 @@ import java.io.ObjectOutputStream;
  * @author Laura Juliana Parra Velandia
  */
 public class Progress {
+    public static final String FOLDER = "perfiles";
+    public static final String EXTENSION = ".prf";
     /**
      * dice en que archivo se guarda el perfil de una persona
      * solo usa letras y numeros del nombre, sin importar mayusculas
@@ -30,7 +33,7 @@ public class Progress {
         if (clean.equals("")) {
             return null;
         }
-        return "perfil_" + clean + ".dat";
+        return FOLDER + "/perfil_" + clean + EXTENSION;
     }
 
     /**
@@ -40,6 +43,10 @@ public class Progress {
      * @throws DOPOSoccerException si no se pudo guardar el archivo
      */
     public static void save(String fileName, Profile profile) throws DOPOSoccerException {
+        if (!fileName.toLowerCase().endsWith(EXTENSION)) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_PROFILE_EXTENSION);
+        }
+        new File(FOLDER).mkdir();
         try {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
             out.writeObject(profile);
@@ -56,6 +63,9 @@ public class Progress {
      * @throws DOPOSoccerException si no existe el archivo o no es un progreso valido
      */
     public static Profile open(String fileName) throws DOPOSoccerException {
+        if (!fileName.toLowerCase().endsWith(EXTENSION)) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_PROFILE_EXTENSION);
+        }
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
             Profile profile = (Profile) in.readObject();
