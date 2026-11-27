@@ -17,6 +17,8 @@ import domain.DOPOSoccer;
 import domain.Player;
 import domain.DOPOSoccerException;
 import domain.Log;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 /**
  * es la pantalla del juego
  * el tiempo
@@ -166,10 +168,12 @@ public class GamePanel extends JPanel implements ActionListener {
     private void saveMatch() {
         soccer.setSeries(window.getSeries());
         JFileChooser chooser = new JFileChooser(MainWindow.matchesFolder());
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new FileNameExtensionFilter("Partidas (.dat)", "dat"));
         if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             String path = chooser.getSelectedFile().getPath();
-            if (!path.endsWith(".dat")) {
-                path = path + ".dat";
+            if (!path.toLowerCase().endsWith(DOPOSoccer.EXTENSION)) {
+                path = path + DOPOSoccer.EXTENSION;
             }
             try {
                 soccer.save(path);
@@ -181,8 +185,9 @@ public class GamePanel extends JPanel implements ActionListener {
         }
     }
 
-    /**
+   /**
      * sigue una partida que se abrio de un archivo
+     * la deja en pausa con el menu abierto, y arranca cuando se da continuar
      * @param loaded es la partida que estaba guardada
      */
     public void loadMatch(DOPOSoccer loaded) {
@@ -191,6 +196,7 @@ public class GamePanel extends JPanel implements ActionListener {
         timer.restart();
         field.setSoccer(soccer);
         updateScoreboard();
+        pause();
     }
 
     /**
