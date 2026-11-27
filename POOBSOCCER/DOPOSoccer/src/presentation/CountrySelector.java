@@ -7,9 +7,13 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+
+import domain.Roster;
 /**
  * fila de paises para que cada jugador escoga el suyo
  * se usa para modo jugador y dos veces para modo de 2 jugadores
@@ -17,10 +21,9 @@ import javax.swing.JPanel;
  * @author Laura Juliana Parra Velandia
  */
 public class CountrySelector extends JPanel implements ActionListener{
-    private static final String[] COUNTRIES = {"Corea Del Sur", "Camerun", "Nigeria", "Noruega", "EE.UU"};
     private static final Color NORMAL = Color.WHITE;
     private static final Color SELECTED = new Color(255, 215, 0);
-
+    private ArrayList<String> countries;
     private JLabel playerName;
     private JLabel message;
     private JButton[] buttons;
@@ -39,19 +42,19 @@ public class CountrySelector extends JPanel implements ActionListener{
      * y el pais que se escogio 
      */
     private void prepareElements(String player){
-
+        countries = Roster.getCountries();
         setLayout(new BorderLayout(0,10));
         setOpaque(false);
         playerName = new JLabel(player);
         playerName.setFont(new Font("Arial", Font.BOLD, 24));
         playerName.setForeground(Color.WHITE);
         add(playerName, BorderLayout.NORTH);
-        JPanel row = new JPanel(new GridLayout(1, COUNTRIES.length, 10, 0));
+        JPanel row = new JPanel(new GridLayout(1, countries.size(), 10, 0));
         row.setOpaque(false);
-        buttons = new JButton[COUNTRIES.length];
-        for (int i = 0; i < COUNTRIES.length; i++) {
-            buttons[i] = new JButton(COUNTRIES[i]);
-            Image flag = new  ImageIcon("imagenes/banderas/"+COUNTRIES[i].toLowerCase() +".png").getImage();
+        buttons = new JButton[countries.size()];
+        for (int i = 0; i < countries.size(); i++) {
+            buttons[i] = new JButton(countries.get(i));
+            Image flag = new ImageIcon("imagenes/banderas/" + countries.get(i).toLowerCase() + ".png").getImage();
             buttons[i].setIcon(new ImageIcon(flag.getScaledInstance(90, 60, Image.SCALE_SMOOTH)));
             buttons[i].setVerticalTextPosition(JButton.BOTTOM);
             buttons[i].setHorizontalTextPosition(JButton.CENTER);
@@ -79,7 +82,7 @@ public class CountrySelector extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e) {
         for (int i = 0; i < buttons.length; i++) {
             if (e.getSource() == buttons[i]) {
-                selected = COUNTRIES[i]; 
+                selected = countries.get(i);
                 buttons[i].setBackground(SELECTED);
             } else {
                 buttons[i].setBackground(NORMAL);
