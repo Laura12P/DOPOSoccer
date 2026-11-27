@@ -31,11 +31,6 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
     private static final Color POST_SHADOW = new Color(0, 0, 0, 130);
     private static final Color COLOR_ONE = new Color(230, 190, 40);
     private static final Color COLOR_TWO = new Color(200, 40, 40);
-    private static final Color AURA_BLUE = new Color(0, 120, 255, 100);
-    private static final Color AURA_YELLOW = new Color(255, 220, 0, 110);
-    private static final Color AURA_GRAY = new Color(150, 150, 150, 120);
-    private static final Color AURA_PURPLE = new Color(170, 60, 220, 100);
-    private static final Color AURA_PINK = new Color(255, 80, 160, 110);
     private static final int GROUND_MARGIN = 40;
     
     private GamePanel game;
@@ -362,18 +357,8 @@ public class FieldPanel extends JPanel implements ActionListener, KeyListener {
      * @param player es el jugador que tiene el aura
      */
     private void drawAura(Graphics g, int x, int ground, Player player) {
-        String power = player.getPower().getName();
-        if (power.equals("Aura Azul")) {
-            g.setColor(AURA_BLUE);
-        } else if (power.equals("Rayo")) {
-            g.setColor(AURA_YELLOW);
-        } else if (power.equals("Tornado")) {
-            g.setColor(AURA_GRAY);
-        } else if (power.equals("Ilusion")) {
-            g.setColor(AURA_PURPLE);
-        } else {
-            g.setColor(AURA_PINK);
-        }
+        int[] aura = player.getPower().getAura();
+        g.setColor(new Color(aura[0], aura[1], aura[2], aura[3]));
         g.fillOval(x - 40, ground - 105, 80, 110);
     }
 
