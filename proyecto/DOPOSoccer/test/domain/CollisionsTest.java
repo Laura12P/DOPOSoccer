@@ -88,7 +88,7 @@ public class CollisionsTest {
 
     @Test
     public void shouldNotKickARivalThatIsBehind() {
-        b.place(40);
+        b.place(60);
         assertFalse(collisions.footTouchesPlayer(a, b, 1));
         assertTrue(collisions.footTouchesPlayer(a, b, -1));
     }
