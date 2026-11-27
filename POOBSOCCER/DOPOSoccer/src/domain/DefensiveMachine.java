@@ -15,7 +15,7 @@ public class DefensiveMachine extends Machine {
      * CONSTRUCTOR
      */
     public DefensiveMachine() {
-        super("Defensiva");
+        super("Defensiva", "su prioridad es defender el arco");
     }
     /**
      * despeja el balon si esta cerca
@@ -40,5 +40,12 @@ public class DefensiveMachine extends Machine {
     public boolean isBallInMyHalf(DOPOSoccer game, int number) {
         double distance = Math.abs(game.getBall().getX() - getOwnGoal(game, number));
         return distance < game.getWidth() / 2;
+    }
+
+    /**
+     * @return una maquina nueva de este tipo
+     */
+    public Machine copy() {
+        return new DefensiveMachine();
     }
 }
