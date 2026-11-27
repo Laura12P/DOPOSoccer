@@ -23,27 +23,37 @@ public class DOPOSoccer implements Serializable {
     public static final int GOAL_HEIGHT = 160;
     public static final int WIN_POINTS = 100;
     public static final int LOSE_POINTS = 25;
-    public static final String[] MACHINES = {"Torpe", "Ofensiva", "Defensiva", "Experta"};
     private static final int SIDE_MARGIN = 25;
     private static final int BALL_START_HEIGHT = 200;
-    private static final int BALL_RADIUS = 16;
     private static final int PLAYER_WIDTH = 50;
     private static final double KICK_SPEED_X = 10;
     private static final double KICK_SPEEED_Y = 7; 
-
+    public static final String EXTENSION = ".dat";
     private Player playerOne;
     private Player playerTwo;
     private Ball ball;
     private Collisions collisions;
     private int width;
     private int height;
-    private int seconds;
-    private boolean goldenGoal;
     private boolean over;
-    private boolean byGoals;
-    private int goalTarget;
+    private MatchMode mode;
     private Machine machine;
     private Series series;
+    private int frozen;
+    private boolean scoreChanged;
+
+    /**
+     * CONSTRUCTOR
+     * prepara un partido por tiempo de 1 minuto
+     * @param one es el jugador del lado izq
+     * @param two es el jugador del lado der
+     * @param width es el ancho de la cancha
+     * @param height es la altura de la cancha
+     */
+    public DOPOSoccer(Player one, Player two, int width, int height) {
+        this(one, two, width, height, new TimeMode(1));
+    }
+
     /**
      * CONSTRUCTOR
      * prepara el partido con los jugadores en su lugar
@@ -51,35 +61,16 @@ public class DOPOSoccer implements Serializable {
      * @param two es el jugador del lado der
      * @param width es el ancho de la cancha
      * @param height es la altura de la cancha
+     * @param mode es el modo de juego
      */
-    public DOPOSoccer (Player one, Player two, int width, int height) {
-        this(one, two, width, height, false, 1);
-    }
-     /**
-     * CONSTRUCTOR
-     * prepara el partido con los jugadores en su lugar
-     * @param one es el jugador del lado izq
-     * @param two es el jugador del lado der
-     * @param width es el ancho de la cancha
-     * @param height es la altura de la cancha
-     * @param byGoals es true si el partido es por goles, y false si es por tiempo
-     * @param amount son los goles para ganar si es por goles, o los minutos si es por tiempo
-     */
-    public DOPOSoccer(Player one, Player two, int width, int height, boolean byGoals, int amount){
+    public DOPOSoccer(Player one, Player two, int width, int height, MatchMode mode) {
         playerOne = one;
         playerTwo = two;
         this.width = width;
         this.height = height;
-        this.byGoals = byGoals;
-        if (byGoals) {
-            goalTarget = amount;
-            seconds = 0;
-        } else {
-            seconds = amount * 60;
-        }
+        this.mode = mode;
         ball = new Ball();
         collisions = new Collisions();
-        goldenGoal = false;
         over = false;
         reset();
     }
@@ -122,13 +113,23 @@ public class DOPOSoccer implements Serializable {
     public void kick(int number) {
         getPlayer(number).startKick();
     }
+    
     /**
      * deja listo el poder del jugador, se usa en su siguiente golpe al balon
      * solo funciona si la barra de poder esta llena
      * @param number es 1 para el jugador izq y 2 para el jugador der
      */
     public void activatePower(int number) {
-        getPlayer(number).armPower();
+        Player player = getPlayer(number);
+        boolean wasArmed = player.isPowerArmed();
+        player.armPower();
+        if (!wasArmed && player.isPowerArmed()) {
+            Player rival = playerOne;
+            if (number == 1) {
+                rival = playerTwo;
+            }
+            player.getPower().activate(player, rival, this);
+        }
     }
 
     /** 
@@ -144,49 +145,44 @@ public class DOPOSoccer implements Serializable {
         playerOne.update(SIDE_MARGIN, width - SIDE_MARGIN);
         playerTwo.update(SIDE_MARGIN, width - SIDE_MARGIN);
         collidePlayers();
-        ball.collideWithPlayer(playerOne);
-        ball.collideWithPlayer(playerTwo);
+        ball.collideWithPlayer(playerOne, this);
+        ball.collideWithPlayer(playerTwo, this);
         checkKick(playerOne, playerTwo, 1);
         checkKick(playerTwo, playerOne, -1);
         ball.update(0, width, height);
-        if (ball.getX() + BALL_RADIUS <= GOAL_WIDTH && ball.getHeight() + BALL_RADIUS <= GOAL_HEIGHT){
+        if (ball.getX() + ball.getRadius() <= GOAL_WIDTH && ball.getHeight() + ball.getRadius() <= GOAL_HEIGHT){
             playerTwo.addGoal();
             playerOne.chargePower(playerOne.getMaxPower() / 4);
             goal = true;
-        } else if (ball.getX() - BALL_RADIUS >= width - GOAL_WIDTH - 1 && ball.getHeight() + BALL_RADIUS <= GOAL_HEIGHT){
+        } else if (ball.getX() - ball.getRadius() >= width - GOAL_WIDTH - 1 && ball.getHeight() + ball.getRadius() <= GOAL_HEIGHT){
             playerOne.addGoal();
             playerTwo.chargePower(playerTwo.getMaxPower() / 4);
             goal = true;
         }
         if (goal) {
             reset();
-            if (goldenGoal || (byGoals && (playerOne.getGoals() >= goalTarget
-                    || playerTwo.getGoals() >= goalTarget))) {
-                finish();
-            }
+            mode.goalScored(this);
         }
-        return goal;
+        boolean changed = goal || scoreChanged;
+        scoreChanged = false;
+        return changed;
     }
 
     /**
-     * le va quitando segundos al partido y carga las barras de poder
-     * si el tiempo llega a cero,y van empatados arranca el gol de oro
-     * en un partido por goles no se acaba el tiempo
+     * pasa un segundo: carga las barras de poder y avanza el modo de juego
+     * si el reloj esta congelado el modo no avanza
      */
-    public void passSecond(){
+    public void passSecond() {
         if (!over) {
             playerOne.passSecond();
             playerTwo.passSecond();
         }
-        if (!over && !byGoals && !goldenGoal && seconds > 0){
-            seconds = seconds -1;
-            if (seconds == 0){
-                if (playerOne.getGoals() == playerTwo.getGoals()){
-                    goldenGoal = true;
-                } else {
-                    finish();
-                }
-            }
+        if (frozen > 0) {
+            frozen = frozen - 1;
+            return;
+        }
+        if (!over) {
+            mode.passSecond(this);
         }
     }
 
@@ -228,18 +224,7 @@ public class DOPOSoccer implements Serializable {
     public Ball getBall(){
         return ball;
     }
-    /**
-     * @return los segundos que le quedan a la partida
-     */
-    public int getSeconds(){
-        return seconds;
-    }
-    /**
-     * @return true si esta en gol de oro
-     */
-    public boolean isGoldenGoal() {
-        return goldenGoal;
-    }
+    
     /**
      * @return true si se acabo el partido
      */
@@ -324,7 +309,7 @@ public class DOPOSoccer implements Serializable {
      * termina el partido y le da los puntos al ganador y al perdedor
      * solo funciona una vez
      */
-    private void finish() {
+    void finish() {
         if (!over) {
             over = true;
             getWinner().addPoints(WIN_POINTS);
@@ -333,28 +318,12 @@ public class DOPOSoccer implements Serializable {
     }
 
     /**
-     * @return true si el partido es por goles, y false si es por tiempo
-     */
-    public boolean isByGoals() {
-        return byGoals;
-    }
-    /**
      * pone una maquina a manejar el jugador de la der
      * @param profile es el tipo de maquina para asignar
      * @throws DOPOSoccerException si no existe ese tipo de maquina
      */
     public void setMachine(String profile) throws DOPOSoccerException {
-        if (MACHINES[0].equals(profile)) {
-            machine = new ClumsyMachine();
-        } else if (MACHINES[1].equals(profile)) {
-            machine = new OffensiveMachine();
-        } else if (MACHINES[2].equals(profile)){
-            machine = new DefensiveMachine();
-        } else if (MACHINES[3].equals(profile)){
-            machine = new ExpertMachine();
-        } else {
-            throw new DOPOSoccerException(DOPOSoccerException.UNKNOWN_MACHINE);
-        }
+        machine = Machines.create(profile);
     }
     /**
      * @param number es 1 para el jugador izq y 2 para el der
@@ -384,11 +353,26 @@ public class DOPOSoccer implements Serializable {
     public int getWidth() {
         return width;
     }
+    
     /**
-     * retorna los goles que se necesitan para ganar, solo en partidos por goles
+     * @return true si el partido es por goles, y false si es por tiempo
      */
-    public int getGoalTarget() {
-        return goalTarget;
+    public boolean isByGoals() {
+        return mode.isByGoals();
+    }
+
+    /**
+     * @return los goles para ganar o los minutos, segun el modo
+     */
+    public int getAmount() {
+        return mode.getAmount();
+    }
+
+    /**
+     * @return lo que dice la barra de arriba segun el modo
+     */
+    public String getModeText() {
+        return mode.getText(this);
     }
     /**
      * guarda la serie que se esta jugando
@@ -410,6 +394,9 @@ public class DOPOSoccer implements Serializable {
      * @throws DOPOSoccerException si no se pudo guardar el archivo
      */
     public void save(String fileName) throws DOPOSoccerException {
+        if (!fileName.toLowerCase().endsWith(EXTENSION)) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_EXTENSION);
+        }
         try {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
             out.writeObject(this);
@@ -426,6 +413,9 @@ public class DOPOSoccer implements Serializable {
      * @throws DOPOSoccerException si no existe el archivo o no es una partida valida
      */
     public static DOPOSoccer open(String fileName) throws DOPOSoccerException {
+        if (!fileName.toLowerCase().endsWith(EXTENSION)) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_EXTENSION);
+        }
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
             DOPOSoccer soccer = (DOPOSoccer) in.readObject();
@@ -440,5 +430,39 @@ public class DOPOSoccer implements Serializable {
         } catch (ClassCastException e) {
             throw new DOPOSoccerException(DOPOSoccerException.INVALID_FILE);
         }
+    }
+
+    /**
+     * congela el reloj del partido, la barra de poder sigue cargando
+     * @param seconds son los segundos que dura el congelamiento
+     */
+    public void freezeTime(int seconds) {
+        frozen = seconds;
+    }
+
+    /**
+     * @return true si el reloj del partido esta congelado
+     */
+    public boolean isTimeFrozen() {
+        return frozen > 0;
+    }
+
+    /**
+     * le quita un gol a un jugador y avisa que el marcador cambio
+     * @param player es el jugador al que se le quita el gol
+     */
+    public void removeGoal(Player player) {
+        player.removeGoal();
+        scoreChanged = true;
+    }
+
+    /**
+     * le suma un gol a un jugador y avisa que el marcador cambio
+     * @param player es el jugador que recibe el gol
+     */
+    public void addGoal(Player player) {
+        player.addGoal();
+        scoreChanged = true;
+        mode.goalScored(this);
     }
 }
