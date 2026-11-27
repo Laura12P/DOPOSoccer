@@ -15,6 +15,6 @@ public class Confusion extends Power {
     }
 
     protected void applyEffect(Player rival, int direction, Ball ball) {
-        rival.applyConfusion(getFrames());
+        rival.applyEffect(new ConfusionEffect(), getFrames());
     }
 }
