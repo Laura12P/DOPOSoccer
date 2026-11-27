@@ -20,7 +20,7 @@ public class ClumsyMachine extends Machine {
      * CONSTRUCTOR
      */
     public ClumsyMachine() {
-        super("Torpe");
+        super("Torpe", "escoge sus movimientos al azar");
         random = new Random();
         steps = 0;
     }
@@ -51,6 +51,13 @@ public class ClumsyMachine extends Machine {
      */
     public int getAction() {
         return action;
+    }
+
+    /**
+     * @return una maquina nueva de este tipo
+     */
+    public Machine copy() {
+        return new ClumsyMachine();
     }
 
 }
