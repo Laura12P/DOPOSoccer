@@ -16,14 +16,18 @@ public abstract class Machine implements Serializable {
     protected static final int LOW_BALL = 60;
     protected static final int HIGH_BALL = 140;
     private String name;
+    private String description;
 
     /**
      * CONSTRUCTOR
-     * @param es el nombre del tipo de maquina
+     * @param name es el nombre del tipo de maquina
+     * @param description es lo que hace esta maquina, en una frase
      */
-    public Machine(String name){
+    public Machine(String name, String description) {
         this.name = name;
+        this.description = description;
     }
+
     /**
      * retorna el nombre del tipo de maquina
      */
@@ -133,5 +137,16 @@ public abstract class Machine implements Serializable {
             game.activatePower(number);
         }
     }
+    
+    /**
+     * @return lo que hace esta maquina, en una frase
+     */
+    public String getDescription() {
+        return description;
+    }
 
+    /**
+     * @return una maquina nueva del mismo tipo, sin lo que haya aprendido o recordado
+     */
+    public abstract Machine copy();
 }
