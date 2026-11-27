@@ -14,7 +14,7 @@ public class DOPOSoccerException extends Exception {
     public static final String MAX_LEVEL = "esta estadistica ya esta en el nivel maximo";
     public static final String UNKNOWN_STAT = "no existe esa estadistica";
     public static final String INVALID_SERIES = "la serie debe ser mejor de 1, 3 o 5, o mas de 0 puntos";
-
+    public static final String INVALID_EXTENSION = "la partida debe ser un archivo .dat";
 
     /**
      * CONSTRUCTOR
