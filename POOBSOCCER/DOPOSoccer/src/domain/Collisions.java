@@ -12,7 +12,7 @@ public class Collisions implements Serializable {
     private static final int PLAYER_HEIGHT = 90;
     private static final int FOOT_REACH = 35;
     private static final int FOOT_HEIGHT = 15;
-    private static final int KICK_RANGE = 30;
+    private static final int FOOT_SIZE = 14;
 
     /**
      * revisa si dos jugadores se estan tocando
@@ -38,7 +38,7 @@ public class Collisions implements Serializable {
         double footY = kicker.getHeight() + FOOT_HEIGHT;
         double dx = ball.getX() - footX;
         double dy = ball.getHeight() - footY;
-        return Math.sqrt(dx * dx + dy * dy) < KICK_RANGE;
+        return Math.sqrt(dx * dx + dy * dy) < FOOT_SIZE + ball.getRadius();
     }
 
     /**
