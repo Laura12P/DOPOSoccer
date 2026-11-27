@@ -11,10 +11,10 @@ public class Lightning extends Power {
      * CONSTRUCTOR
      */
     public Lightning() {
-        super("Rayo", 60, 14, 3, false);
+        super("Rayo", 60, 14, 3, false, new int[] {255, 220, 0, 110});
     }
 
-    protected void applyEffect(Player rival, int direction, Ball ball) {
-        rival.applyShock(getFrames());
+    protected void applyEffect(Player user, Player rival, int direction, DOPOSoccer game) {
+        rival.applyEffect(new ShockEffect(), getFrames());
     }
 }
