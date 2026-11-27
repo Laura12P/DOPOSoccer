@@ -14,28 +14,16 @@ import org.junit.Test;
 public class SaveTest {
     private static final String FILE = "prueba.dat";
 
-    /**
-     * borra los archivos que crean las pruebas
-     */
     @After
     public void tearDown() {
         new File(FILE).delete();
     }
-
-    /**
-     * crea un partido con dos jugadores
-     * @return el partido creado
-     */
     private DOPOSoccer createMatch() {
         Player one = new Player("Son", "Corea del Sur", 5, 5, 5, 5, new BlueAura());
         Player two = new Player("Osimhen", "Nigeria", 5, 5, 5, 5, new Tornado());
-        return new DOPOSoccer(one, two, 800, 400, true, 3);
+        return new DOPOSoccer(one, two, 800, 400, MatchMode.create(true, 3));
     }
 
-    /**
-     * al abrir una partida guardada debe tener los mismos datos
-     * @throws Exception si falla guardar o abrir
-     */
     @Test
     public void shouldOpenWhatWasSaved() throws Exception {
         DOPOSoccer soccer = createMatch();
@@ -45,13 +33,10 @@ public class SaveTest {
         assertEquals("Nigeria", opened.getPlayerTwo().getCountry());
         assertEquals(soccer.getWidth(), opened.getWidth());
         assertTrue(opened.isByGoals());
-        assertEquals(soccer.getGoalTarget(), opened.getGoalTarget());
+        assertEquals(soccer.getAmount(), opened.getAmount());
     }
 
-    /**
-     * la maquina asignada debe seguir despues de abrir la partida
-     * @throws Exception si falla guardar o abrir
-     */
+
     @Test
     public void shouldKeepTheMachine() throws Exception {
         DOPOSoccer soccer = createMatch();
@@ -60,9 +45,7 @@ public class SaveTest {
         assertTrue(DOPOSoccer.open(FILE).isMachine(2));
     }
 
-    /**
-     * abrir un archivo que no existe debe lanzar la excepcion
-     */
+
     @Test
     public void shouldNotOpenMissingFile() {
         try {
@@ -73,10 +56,7 @@ public class SaveTest {
         }
     }
 
-    /**
-     * abrir un archivo que no es una partida debe lanzar la excepcion
-     * @throws Exception si no se puede crear el archivo
-     */
+
     @Test
     public void shouldNotOpenInvalidFile() throws Exception {
         FileWriter writer = new FileWriter(FILE);
@@ -90,9 +70,6 @@ public class SaveTest {
         }
     }
 
-    /**
-     * guardar en una carpeta que no existe debe lanzar la excepcion
-     */
     @Test
     public void shouldNotSaveInMissingFolder() {
         try {

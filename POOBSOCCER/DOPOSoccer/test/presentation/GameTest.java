@@ -7,6 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import domain.DOPOSoccer;
+import domain.MatchMode;
+import domain.ShockEffect;
+import domain.KnockOutEffect;
 import domain.DOPOSoccerException;
 import domain.Player;
 
@@ -34,7 +37,7 @@ public class GameTest {
         field.setSize(880, 480);
         one = PlayerSelector.atRandom().copy();
         two = PlayerSelector.atRandom().copy();
-        soccer = new DOPOSoccer(one, two, 880, field.getFieldHeight(), true, 99);
+        soccer = new DOPOSoccer(one, two, 880, field.getFieldHeight(), MatchMode.create(true, 99));
         field.setSoccer(soccer);
         field.stop();
     }
@@ -44,26 +47,15 @@ public class GameTest {
         window.dispose();
     }
 
-    /**
-     * oprime una tecla en la cancha
-     * @param code es el codigo de la tecla
-     */
+
     private void press(int code) {
         field.keyPressed(new KeyEvent(field, KeyEvent.KEY_PRESSED, 0, 0, code, KeyEvent.CHAR_UNDEFINED));
     }
 
-    /**
-     * suelta una tecla en la cancha
-     * @param code es el codigo de la tecla
-     */
     private void release(int code) {
         field.keyReleased(new KeyEvent(field, KeyEvent.KEY_RELEASED, 0, 0, code, KeyEvent.CHAR_UNDEFINED));
     }
 
-    /**
-     * avanza la cancha los pasos que se indiquen
-     * @param steps son los pasos del reloj
-     */
     private void step(int steps) {
         for (int i = 0; i < steps; i++) {
             field.actionPerformed(null);
@@ -159,11 +151,11 @@ public class GameTest {
     @Test
     public void shouldDrawTheFieldWithTheEffects() {
         draw();
-        one.applyShock(100);
-        two.applyKnockOut(100);
+        one.applyEffect(new ShockEffect(), 100);
+        two.applyEffect(new KnockOutEffect(), 100);
         soccer.getBall().split(100);
         draw();
-        two.applyShock(100);
+        two.applyEffect(new ShockEffect(), 100);
         one.receiveDamage(one.getMaxLife());
         draw();
         assertEquals(7, soccer.getBall().getFakes().size());

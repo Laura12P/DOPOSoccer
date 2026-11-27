@@ -12,12 +12,14 @@ import org.junit.Test;
  * @author Laura Juliana Parra Velandia
  */
 public class ProgressTest {
-    private static final String FILE = "pruebaprogreso.dat";
+    private static final String FILE = "pruebaprogreso.prf";
+    private static final String MATCH = "pruebapartida.dat";
 
 
     @After
     public void tearDown() {
         new File(FILE).delete();
+        new File(MATCH).delete();
     }
 
     @Test
@@ -38,20 +40,20 @@ public class ProgressTest {
     public void shouldNotOpenASavedMatchAsAProfile() throws Exception {
         Player one = new Player("Son", "Corea del Sur", 1, 1, 1, 1, new BlueAura());
         Player two = new Player("Osimhen", "Nigeria", 1, 1, 1, 1, new Tornado());
-        new DOPOSoccer(one, two, 880, 480).save(FILE);
+        new DOPOSoccer(one, two, 880, 480).save(MATCH);
         try {
-            Progress.open(FILE);
+            Progress.open(MATCH);
             fail("deberia lanzar la excepcion");
         } catch (DOPOSoccerException e) {
-            assertEquals(DOPOSoccerException.INVALID_FILE, e.getMessage());
+            assertEquals(DOPOSoccerException.INVALID_PROFILE_EXTENSION, e.getMessage());
         }
     }
 
 
     @Test
     public void shouldBuildTheFileNameOfAProfile() {
-        assertEquals("perfil_laura.dat", Progress.fileName("Laura"));
-        assertEquals("perfil_laura2.dat", Progress.fileName(" LAURA 2! "));
+        assertEquals("perfiles/perfil_laura.prf", Progress.fileName("Laura"));
+        assertEquals("perfiles/perfil_laura2.prf", Progress.fileName(" LAURA 2! "));
         assertEquals(Progress.fileName("Laura"), Progress.fileName("laura"));
     }
 
@@ -65,7 +67,7 @@ public class ProgressTest {
     @Test
     public void shouldNotOpenMissingFile() {
         try {
-            Progress.open("noexisteprogreso.dat");
+            Progress.open("noexisteprogreso.prf");
             fail("debia lanzar excepcion");
         } catch (DOPOSoccerException e) {
             assertEquals(DOPOSoccerException.FILE_NOT_FOUND, e.getMessage());
@@ -90,7 +92,7 @@ public class ProgressTest {
     @Test
     public void shouldNotSaveInMissingFolder() {
         try {
-            Progress.save("carpetaquenoexiste/progreso.dat", new Profile("Laura"));
+            Progress.save("carpetaquenoexiste/progreso.prf", new Profile("Laura"));
             fail("debia lanzar excepcion");
         } catch (DOPOSoccerException e) {
             assertEquals(DOPOSoccerException.CANNOT_SAVE, e.getMessage());

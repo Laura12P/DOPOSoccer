@@ -333,11 +333,7 @@ public class MainWindow extends JFrame {
             lastWidth = soccer.getWidth() + extraWidth;
             lastHeight = soccer.getHeight() + extraHeight;
             lastByGoals = soccer.isByGoals();
-            if (lastByGoals) {
-                lastAmount = soccer.getGoalTarget();
-            } else {
-                lastAmount = Math.max(1, soccer.getSeconds() / 60);
-            }
+            lastAmount = soccer.getAmount();
             lastFullScreen = false;
             setSize(lastWidth, lastHeight);
             setLocationRelativeTo(null);

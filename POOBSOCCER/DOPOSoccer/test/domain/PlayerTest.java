@@ -7,8 +7,6 @@ import org.junit.Test;
 
 /**
  * pruebas de la clase Player
- * revisa la vida, la patada, el movimiento, el aturdimiento,
- * la barra de poder y los efectos de los tiros de poder
  * @author Jeronimo Avila Castillo
  * @author Laura Juliana Parra Velandia
  */
@@ -22,10 +20,6 @@ public class PlayerTest {
         player.place(200);
     }
 
-    /**
-     * deja pasar los pasos del reloj que se indiquen
-     * @param frames son los pasos que pasan
-     */
     private void pass(int frames) {
         for (int i = 0; i < frames; i++) {
             player.update(25, 855);
@@ -267,7 +261,7 @@ public class PlayerTest {
 
     @Test
     public void shouldBeConfusedOnlyForTheEffectTime() {
-        player.applyConfusion(60);
+        player.applyEffect(new ConfusionEffect(), 60);
         assertTrue(player.isConfused());
         pass(59);
         assertTrue(player.isConfused());
@@ -277,7 +271,7 @@ public class PlayerTest {
 
     @Test
     public void shouldBeShockedOnlyForTheEffectTime() {
-        player.applyShock(60);
+        player.applyEffect(new ShockEffect(), 60);
         assertTrue(player.isShocked());
         pass(60);
         assertFalse(player.isShocked());
@@ -288,7 +282,7 @@ public class PlayerTest {
         Player normal = new Player("Normal", "Colombia", 3, 3, 3, 3, new BlueAura());
         normal.place(400);
         player.place(400);
-        player.applyShock(60);
+        player.applyEffect(new ShockEffect(), 60);
         normal.moveRight(855);
         player.moveRight(855);
         assertEquals((normal.getX() - 400) / 2, player.getX() - 400, DELTA);
@@ -296,7 +290,7 @@ public class PlayerTest {
 
     @Test
     public void shouldNotJumpWhenShocked() {
-        player.applyShock(60);
+        player.applyEffect(new ShockEffect(), 60);
         player.jump();
         pass(1);
         assertEquals(0, player.getHeight(), DELTA);
@@ -304,7 +298,7 @@ public class PlayerTest {
 
     @Test
     public void shouldBeKnockedOutAndNotMove() {
-        player.applyKnockOut(180);
+        player.applyEffect(new KnockOutEffect(), 180);
         assertTrue(player.isStunned());
         player.moveLeft(25);
         assertEquals(200, player.getX(), DELTA);
@@ -312,18 +306,18 @@ public class PlayerTest {
 
     @Test
     public void shouldBePushedTowardsTheDirection() {
-        player.applyPush(1, 30);
+        player.applyEffect(new PushEffect(1), 30);
         pass(10);
         assertTrue(player.getX() > 200);
     }
 
     @Test
     public void shouldReplaceTheEffectInsteadOfAddingThem() {
-        player.applyShock(60);
-        player.applyConfusion(60);
+        player.applyEffect(new ShockEffect(), 60);
+        player.applyEffect(new ConfusionEffect(), 60);
         assertFalse(player.isShocked());
         assertTrue(player.isConfused());
-        player.applyShock(60);
+        player.applyEffect(new ShockEffect(), 60);
         assertTrue(player.isShocked());
         assertFalse(player.isConfused());
     }

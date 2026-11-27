@@ -139,13 +139,13 @@ public class PersistenceTest {
 
     @Test
     public void shouldFailWhenTheFileIsAProfile() throws Exception {
-        File file = temp(".dat");
+        File file = temp(".prf");
         Progress.save(file.getPath(), new Profile("Ana"));
         try {
             DOPOSoccer.open(file.getPath());
             fail();
         } catch (DOPOSoccerException e) {
-            expect(DOPOSoccerException.INVALID_FILE, e);
+            expect(DOPOSoccerException.INVALID_EXTENSION, e);
         }
     }
 
@@ -164,7 +164,7 @@ public class PersistenceTest {
         Profile profile = new Profile("Ana");
         profile.addPoints(1500);
         profile.upgrade(Profile.SPEED);
-        File file = temp(".dat");
+        File file = temp(".prf");
         Progress.save(file.getPath(), profile);
         Profile opened = Progress.open(file.getPath());
         assertEquals("Ana", opened.getName());
@@ -181,14 +181,14 @@ public class PersistenceTest {
             Progress.open(file.getPath());
             fail();
         } catch (DOPOSoccerException e) {
-            expect(DOPOSoccerException.INVALID_FILE, e);
+            expect(DOPOSoccerException.INVALID_PROFILE_EXTENSION, e);
         }
     }
 
     @Test
     public void shouldFailSavingAProfileInAMissingFolder() {
         try {
-            Progress.save("carpeta_que_no_existe_zzz/perfil.dat", new Profile("Ana"));
+            Progress.save("carpeta_que_no_existe_zzz/perfil.prf", new Profile("Ana"));
             fail();
         } catch (DOPOSoccerException e) {
             expect(DOPOSoccerException.CANNOT_SAVE, e);

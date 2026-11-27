@@ -32,11 +32,11 @@ public class DOPOSoccerTest {
 
     @Test
     public void shouldStartWithSixtySecondsAndNoGoals() {
-        assertEquals(60, soccer.getSeconds());
+        assertEquals("Tiempo: 1:00", soccer.getModeText());
         assertEquals(0, one.getGoals());
         assertEquals(0, two.getGoals());
         assertFalse(soccer.isOver());
-        assertFalse(soccer.isGoldenGoal());
+        assertFalse(soccer.getModeText().equals("GOL DE ORO"));
         assertFalse(soccer.isByGoals());
     }
 
@@ -117,7 +117,7 @@ public class DOPOSoccerTest {
     public void shouldLoseOneSecondEachTime() {
         soccer.passSecond();
         soccer.passSecond();
-        assertEquals(58, soccer.getSeconds());
+        assertEquals("Tiempo: 0:58", soccer.getModeText());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class DOPOSoccerTest {
         soccer.update();
         passSeconds(60);
         assertTrue(soccer.isOver());
-        assertFalse(soccer.isGoldenGoal());
+        assertFalse(soccer.getModeText().equals("GOL DE ORO"));
         assertSame(one, soccer.getWinner());
         assertSame(two, soccer.getLoser());
     }
@@ -141,7 +141,7 @@ public class DOPOSoccerTest {
     @Test
     public void shouldStartGoldenGoalWhenTiedAtTheEnd() {
         passSeconds(60);
-        assertTrue(soccer.isGoldenGoal());
+        assertTrue(soccer.getModeText().equals("GOL DE ORO"));
         assertFalse(soccer.isOver());
     }
 
@@ -168,37 +168,37 @@ public class DOPOSoccerTest {
         soccer.update();
         passSeconds(60);
         soccer.passSecond();
-        assertEquals(0, soccer.getSeconds());
+        assertEquals("Tiempo: 0:00", soccer.getModeText());
     }
 
     @Test
     public void shouldPlayTheMinutesChosen() {
-        DOPOSoccer longmatch = new DOPOSoccer(one, two, WIDTH, HEIGHT, false, 3);
-        assertEquals(180, longmatch.getSeconds());
+        DOPOSoccer longmatch = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(false, 3));
+        assertEquals("Tiempo: 3:00", longmatch.getModeText());
         assertFalse(longmatch.isByGoals());
     }
 
     @Test
     public void shouldBeAMatchByGoals() {
-        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, true, 3);
+        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(true, 3));
         assertTrue(goals.isByGoals());
-        assertEquals(3, goals.getGoalTarget());
+        assertEquals(3, goals.getAmount());
         assertFalse(goals.isOver());
     }
 
     @Test
     public void shouldNotRunOutOfTimeWhenTheMatchIsByGoals() {
-        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, true, 3);
+        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(true, 3));
         for (int i = 0; i < 500; i++) {
             goals.passSecond();
         }
         assertFalse(goals.isOver());
-        assertFalse(goals.isGoldenGoal());
+        assertFalse(goals.getModeText().equals("GOL DE ORO"));
     }
 
     @Test
     public void shouldEndWhenSomeoneReachesTheGoalsToWin() {
-        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, true, 2);
+        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(true, 2));
         goals.getBall().place(WIDTH - 30, 50);
         goals.update();
         assertFalse(goals.isOver());
@@ -210,7 +210,7 @@ public class DOPOSoccerTest {
 
     @Test
     public void shouldGiveHundredPointsToTheWinnerAndTwentyFiveToTheLoser() {
-        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, true, 1);
+        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(true, 1));
         goals.getBall().place(30, 50);
         goals.update();
         assertEquals(100, two.getPoints());
@@ -219,7 +219,7 @@ public class DOPOSoccerTest {
 
     @Test
     public void shouldGivePointsOnlyOnce() {
-        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, true, 1);
+        DOPOSoccer goals = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(true, 1));
         goals.getBall().place(30, 50);
         goals.update();
         goals.getBall().place(30, 50);
@@ -290,7 +290,7 @@ public class DOPOSoccerTest {
 
     @Test
     public void shouldInvertTheMovementWhenConfused() {
-        two.applyConfusion(600);
+        two.applyEffect(new ConfusionEffect(), 600);
         double start = two.getX();
         soccer.moveLeft(2);
         assertTrue(two.getX() > start);

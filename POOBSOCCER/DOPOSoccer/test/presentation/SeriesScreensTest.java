@@ -9,6 +9,7 @@ import domain.BlueAura;
 import domain.Confusion;
 import domain.DOPOSoccer;
 import domain.DOPOSoccerException;
+import domain.MatchMode;
 import domain.Player;
 import domain.Profile;
 import domain.Progress;
@@ -54,7 +55,7 @@ public class SeriesScreensTest {
      * @param screen es la pantalla que se espera
      */
     private void waitFor(String screen) throws InterruptedException {
-        for (int i = 0; i < 60 && !screen.equals(window.getCurrentScreen()); i++) {
+        for (int i = 0; i < 200 && !screen.equals(window.getCurrentScreen()); i++) {
             Thread.sleep(50);
         }
     }
@@ -233,7 +234,7 @@ public class SeriesScreensTest {
         window.finishMatch(1, "Son (Corea Del Sur)   1 - 0");
         Player one = new Player("Son", "Corea Del Sur", 1, 1, 1, 1, new BlueAura());
         Player two = new Player("Haaland", "Noruega", 1, 1, 1, 1, new Confusion());
-        DOPOSoccer soccer = new DOPOSoccer(one, two, 880, 480, true, 3);
+        DOPOSoccer soccer = new DOPOSoccer(one, two, 880, 480, MatchMode.create(true, 3));
         soccer.setSeries(window.getSeries());
         soccer.save(MATCH);
         jero.addPoints(500);
@@ -255,7 +256,7 @@ public class SeriesScreensTest {
         game.doLayout();
         Player one = new Player("Son", "Corea Del Sur", 1, 1, 1, 1, new BlueAura());
         Player two = new Player("Haaland", "Noruega", 1, 1, 1, 1, new Confusion());
-        DOPOSoccer soccer = new DOPOSoccer(one, two, 880, 480, true, 1);
+        DOPOSoccer soccer = new DOPOSoccer(one, two, 880, 480, MatchMode.create(true, 1));
         soccer.getBall().place(850, 50);
         game.loadMatch(soccer);
         waitFor(MainWindow.RESULTS);

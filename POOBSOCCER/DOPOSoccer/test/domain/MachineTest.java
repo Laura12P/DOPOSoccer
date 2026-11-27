@@ -18,13 +18,9 @@ public class MachineTest {
     public void setUp() {
         one = new Player("Uno", "Colombia", 3, 3, 3, 3, new BlueAura());
         two = new Player("Dos", "Brasil", 3, 3, 3, 3, new Tornado());
-        soccer = new DOPOSoccer(one, two, WIDTH, HEIGHT, true, 99);
+        soccer = new DOPOSoccer(one, two, WIDTH, HEIGHT, MatchMode.create(true, 99));
     }
 
-    /**
-     * deja correr el partido los pasos que se indiquen
-     * @param steps son los pasos del reloj
-     */
     private void play(int steps) {
         for (int i = 0; i < steps; i++) {
             soccer.update();
@@ -40,11 +36,11 @@ public class MachineTest {
 
     @Test
     public void shouldCreateEveryTypeOfMachine() throws DOPOSoccerException {
-        for (int i = 0; i < DOPOSoccer.MACHINES.length; i++) {
-            soccer.setMachine(DOPOSoccer.MACHINES[i]);
+        for (int i = 0; i < Machines.getNames().size(); i++) {
+            soccer.setMachine(Machines.getNames().get(i));
             assertTrue(soccer.isMachine(2));
             assertFalse(soccer.isMachine(1));
-            assertEquals(DOPOSoccer.MACHINES[i], soccer.getMachineName());
+            assertEquals(Machines.getNames().get(i), soccer.getMachineName());
         }
     }
 

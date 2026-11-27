@@ -17,8 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-
-import domain.DOPOSoccer;
+import domain.Machines;
 
 /**
  * pantalla donde se escoge el tipo de maquina
@@ -73,7 +72,7 @@ public class MachinePanel extends JPanel implements ActionListener {
         title.setForeground(GOLD);
         panel.add(title, BorderLayout.NORTH);
 
-        String[] names = DOPOSoccer.MACHINES;
+        String[] names = Machines.getNames().toArray(new String[0]);
         machineButtons = new JToggleButton[names.length];
         ButtonGroup group = new ButtonGroup();
         JPanel options = new JPanel(new GridLayout(2, 2, 30, 20));
@@ -140,10 +139,10 @@ public class MachinePanel extends JPanel implements ActionListener {
      * retorna el nombre de la maquina que se escogio
      */
     public String getSelected() {
-        String selected = DOPOSoccer.MACHINES[0];
+        String selected = Machines.getNames().get(0);
         for (int i = 0; i < machineButtons.length; i++){
             if (machineButtons[i].isSelected()) {
-                selected = DOPOSoccer.MACHINES[i];
+                selected = Machines.getNames().get(i);
             }
             
         }

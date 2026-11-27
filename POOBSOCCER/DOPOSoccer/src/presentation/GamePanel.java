@@ -17,6 +17,7 @@ import domain.DOPOSoccer;
 import domain.Player;
 import domain.DOPOSoccerException;
 import domain.Log;
+import domain.MatchMode;
 /**
  * es la pantalla del juego
  * el tiempo
@@ -122,7 +123,7 @@ public class GamePanel extends JPanel implements ActionListener {
      * @param machine es el tipo de maquina del jugador de der
      */
     public void prepareMatch(Player one, Player two, boolean byGoals, int amount, String machine) {
-        soccer = new DOPOSoccer(one.copy(), two.copy(), field.getWidth(), field.getFieldHeight(), byGoals, amount);
+        soccer = new DOPOSoccer(one.copy(), two.copy(), field.getWidth(), field.getFieldHeight(), MatchMode.create(byGoals, amount));
        if (machine != null) {
             try {
                 soccer.setMachine(machine);
@@ -242,19 +243,7 @@ public class GamePanel extends JPanel implements ActionListener {
      * muestra en la barra de arriba la meta de goles, el tiempo que queda o el gol de oro
      */
     private void showTime() {
-        if (soccer.isByGoals()) {
-            time.setText("Meta: " + soccer.getGoalTarget() + " goles");
-        } else if (soccer.isGoldenGoal()) {
-            time.setText("GOL DE ORO");
-        } else {
-            int seconds = soccer.getSeconds();
-            int rest = seconds % 60;
-            if (rest < 10) {
-                time.setText("Tiempo: " + seconds / 60 + ":0" + rest);
-            } else {
-                time.setText("Tiempo: " + seconds / 60 + ":" + rest);
-            }
-        }
+        time.setText(soccer.getModeText());
     }
 
 

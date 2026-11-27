@@ -23,7 +23,10 @@ public class Ball extends GameObject {
     private int shotDirection;
     private ArrayList<Ball> fakes;
     private int fakeTime;
-
+    private double gravity;
+    private double bounce;
+    private int radius;
+    private int bodyTime;
     /**
      * CONSTRUCTOR
      * crea el balon quieto en el suelo
@@ -34,6 +37,10 @@ public class Ball extends GameObject {
         speedX = 0;
         speedY = 0;
         fakes = new ArrayList<Ball>();
+        gravity = GRAVITY;
+        bounce = BOUNCE;
+        radius = RADIUS;
+        
     }
 
     /**
@@ -60,13 +67,13 @@ public class Ball extends GameObject {
      */
     public void update(int left, int right, int ceiling) {
         if (shotPower == null) {
-            speedY = speedY - GRAVITY;
+            speedY = speedY - gravity;
         }
         x = x + speedX;
         height = height + speedY;
-        if (height <= RADIUS) {
-            height = RADIUS;
-            speedY = -speedY * BOUNCE;
+        if (height <= radius) {
+            height = radius;
+            speedY = -speedY * bounce;
             if (shotPower == null) {
                 speedX = speedX * FRICTION;
             }
@@ -74,18 +81,18 @@ public class Ball extends GameObject {
                 speedY = 0;
             }
         }
-        if (height >= ceiling - RADIUS) {
-            height = ceiling - RADIUS;
-            speedY = -speedY * BOUNCE;
+        if (height >= ceiling - radius) {
+            height = ceiling - radius;
+            speedY = -speedY * bounce;
         }
-        if (x <= left + RADIUS) {
-            x = left + RADIUS;
-            speedX = -speedX * BOUNCE;
+        if (x <= left + radius) {
+            x = left + radius;
+            speedX = -speedX * bounce;
             shotPower = null;
         }
-        if (x >= right - RADIUS) {
-            x = right - RADIUS;
-            speedX = -speedX * BOUNCE;
+        if (x >= right - radius) {
+            x = right - radius;
+            speedX = -speedX * bounce;
             shotPower = null;
         }
         if (fakeTime > 0) {
@@ -97,6 +104,14 @@ public class Ball extends GameObject {
         for (int i = 0; i < fakes.size(); i++) {
             fakes.get(i).update(left, right, ceiling);
         }
+        if (bodyTime > 0) {
+            bodyTime = bodyTime - 1;
+            if (bodyTime == 0) {
+                gravity = GRAVITY;
+                bounce = BOUNCE;
+                radius = RADIUS;
+            }
+        } 
     }
 
     /**
@@ -106,7 +121,7 @@ public class Ball extends GameObject {
      * @param player es el jugador con el que se revisa el choque
      * @return true si el balon toco al jugador
      */
-    public boolean collideWithPlayer(Player player) {
+    public boolean collideWithPlayer(Player player, DOPOSoccer game) {
         boolean touched = false;
         double[] heights = {20, 65};
         double[] radii = {20, 25};
@@ -116,7 +131,7 @@ public class Ball extends GameObject {
             double dx = x - centerX;
             double dy = height - centerY;
             double distance = Math.sqrt(dx * dx + dy * dy);
-            double minimum = radii[i] + RADIUS;
+            double minimum = radii[i] + radius;
             if (distance < minimum && distance > 0) {
                 touched = true;
                 double nx = dx / distance;
@@ -133,7 +148,7 @@ public class Ball extends GameObject {
                 speedX = nx * speed;
                 speedY = ny * speed;
                 if (shotPower != null && player == shotTarget) {
-                    shotPower.hit(shotOwner, player, shotDirection, this);
+                    shotPower.hit(shotOwner, player, shotDirection, game);
                     shotPower = null;
                 }
             }
@@ -167,7 +182,7 @@ public class Ball extends GameObject {
         speedX = direction * power.getSpeed();
         speedY = 0;
         if (power.isGroundShot()) {
-            height = RADIUS;
+            height = radius;
         }
     }
 
@@ -188,9 +203,30 @@ public class Ball extends GameObject {
     }
 
     /**
-     * @return los balones falsos que hay en este momento
+     * returna los balones falsos que hay 
      */
     public ArrayList<Ball> getFakes() {
         return fakes;
+    }
+    
+    /**
+     * retorna el radio actual del balon
+     */
+    public int getRadius() {
+        return radius;
+    }
+
+    /**
+     * cambia por un tiempo como se comporta el balon
+     * @param gravity es la nueva gravedad
+     * @param bounce es el nuevo rebote
+     * @param radius es el nuevo radio
+     * @param frames es cuanto dura el cambio
+     */
+    public void changeBody(double gravity, double bounce, int radius, int frames) {
+        this.gravity = gravity;
+        this.bounce = bounce;
+        this.radius = radius;
+        bodyTime = frames;
     }
 }
