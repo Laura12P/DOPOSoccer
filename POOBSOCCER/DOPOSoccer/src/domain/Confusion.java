@@ -11,7 +11,7 @@ public class Confusion extends Power {
      * CONSTRUCTOR
      */
     public Confusion() {
-        super("Confusion", 30, 12, 8, false);
+        super("Confusion", 30, 12, 8, false, new int[] {255, 80, 160, 110});
     }
 
     protected void applyEffect(Player rival, int direction, Ball ball) {
