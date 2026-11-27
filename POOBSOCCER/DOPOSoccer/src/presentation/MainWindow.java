@@ -7,7 +7,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
+import javax.swing.filechooser.FileNameExtensionFilter;
 import domain.DOPOSoccer;
 import domain.DOPOSoccerException;
 import domain.Log;
@@ -298,11 +298,12 @@ public class MainWindow extends JFrame {
      */
     public void openMatch() {
         JFileChooser chooser = new JFileChooser(matchesFolder());
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setFileFilter(new FileNameExtensionFilter("Partidas (.dat)", "dat"));
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             openMatch(chooser.getSelectedFile().getPath());
         }
     }
-
     /**
      * Abre la partida guardada 
      * @param path es la ruta del archivo de la partida
