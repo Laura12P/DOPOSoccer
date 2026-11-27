@@ -11,7 +11,7 @@ public class BlueAura extends Power {
      * CONSTRUCTOR
      */
     public BlueAura() {
-        super("Aura Azul", 40, 16, 1.5, false);
+        super("Aura Azul", 40, 16, 1.5, false, new int[] {0, 120, 255, 100});
     }
 
     protected void applyEffect(Player rival, int direction, Ball ball) {
