@@ -23,14 +23,13 @@ public class DOPOSoccer implements Serializable {
     public static final int GOAL_HEIGHT = 160;
     public static final int WIN_POINTS = 100;
     public static final int LOSE_POINTS = 25;
-    public static final String[] MACHINES = {"Torpe", "Ofensiva", "Defensiva", "Experta"};
     private static final int SIDE_MARGIN = 25;
     private static final int BALL_START_HEIGHT = 200;
     private static final int BALL_RADIUS = 16;
     private static final int PLAYER_WIDTH = 50;
     private static final double KICK_SPEED_X = 10;
     private static final double KICK_SPEEED_Y = 7; 
-
+    public static final String EXTENSION = ".dat";
     private Player playerOne;
     private Player playerTwo;
     private Ball ball;
@@ -338,23 +337,14 @@ public class DOPOSoccer implements Serializable {
     public boolean isByGoals() {
         return byGoals;
     }
+    
     /**
      * pone una maquina a manejar el jugador de la der
      * @param profile es el tipo de maquina para asignar
      * @throws DOPOSoccerException si no existe ese tipo de maquina
      */
     public void setMachine(String profile) throws DOPOSoccerException {
-        if (MACHINES[0].equals(profile)) {
-            machine = new ClumsyMachine();
-        } else if (MACHINES[1].equals(profile)) {
-            machine = new OffensiveMachine();
-        } else if (MACHINES[2].equals(profile)){
-            machine = new DefensiveMachine();
-        } else if (MACHINES[3].equals(profile)){
-            machine = new ExpertMachine();
-        } else {
-            throw new DOPOSoccerException(DOPOSoccerException.UNKNOWN_MACHINE);
-        }
+        machine = Machines.create(profile);
     }
     /**
      * @param number es 1 para el jugador izq y 2 para el der
@@ -410,6 +400,9 @@ public class DOPOSoccer implements Serializable {
      * @throws DOPOSoccerException si no se pudo guardar el archivo
      */
     public void save(String fileName) throws DOPOSoccerException {
+        if (!fileName.toLowerCase().endsWith(EXTENSION)) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_EXTENSION);
+        }
         try {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName));
             out.writeObject(this);
@@ -426,6 +419,9 @@ public class DOPOSoccer implements Serializable {
      * @throws DOPOSoccerException si no existe el archivo o no es una partida valida
      */
     public static DOPOSoccer open(String fileName) throws DOPOSoccerException {
+        if (!fileName.toLowerCase().endsWith(EXTENSION)) {
+            throw new DOPOSoccerException(DOPOSoccerException.INVALID_EXTENSION);
+        }
         try {
             ObjectInputStream in = new ObjectInputStream(new FileInputStream(fileName));
             DOPOSoccer soccer = (DOPOSoccer) in.readObject();
