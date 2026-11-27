@@ -14,7 +14,7 @@ public class OffensiveMachine extends Machine {
      * CONSTRUCTOR
      */
     public OffensiveMachine() {
-        super("Ofensiva");
+        super("Ofensiva", "su prioridad es anotar");
     }
     /**
      * va detras del balon, patea y usa el poder cuando pueda
@@ -24,5 +24,12 @@ public class OffensiveMachine extends Machine {
     public void play(DOPOSoccer game, int number) {
         usePowerIfReady(game, number);
         attack(game, number);
+    }
+
+    /**
+     * @return una maquina nueva de este tipo
+     */
+    public Machine copy() {
+        return new OffensiveMachine();
     }
 }
