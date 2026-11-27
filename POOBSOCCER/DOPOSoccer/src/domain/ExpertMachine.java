@@ -16,7 +16,7 @@ public class ExpertMachine extends Machine {
      * CONSTRUCTOR
      */
     public ExpertMachine() {
-        super("Experta");
+        super("Experta", "decide segun como va el partido");
         offensive = new OffensiveMachine();
         defensive = new DefensiveMachine();
         attacking = true;
@@ -43,5 +43,12 @@ public class ExpertMachine extends Machine {
      */
     public boolean isAttacking() {
         return attacking;
+    }
+
+    /**
+     * @return una maquina nueva de este tipo
+     */
+    public Machine copy() {
+        return new ExpertMachine();
     }
 }
