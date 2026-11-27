@@ -17,8 +17,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-
-import domain.DOPOSoccer;
+import java.util.ArrayList;
+import domain.Machines;
 
 /**
  * pantalla donde se escoge el tipo de maquina
@@ -31,13 +31,7 @@ import domain.DOPOSoccer;
  */
 public class MachinePanel extends JPanel implements ActionListener {
     private static final Color GOLD = new Color(230, 190, 40);
-    private static final String[] DESCRIPTIONS = {
-        "escoge sus movimientos al azar",
-        "su prioridad es anotar",
-        "su prioridad es defender el arco",
-        "decide segun como va el partido"
-    };
-    
+    private ArrayList<String> names;
     private MainWindow window;
     private JLabel title;
     private JToggleButton[] machineButtons;
@@ -73,15 +67,16 @@ public class MachinePanel extends JPanel implements ActionListener {
         title.setForeground(GOLD);
         panel.add(title, BorderLayout.NORTH);
 
-        String[] names = DOPOSoccer.MACHINES;
-        machineButtons = new JToggleButton[names.length];
+        names = Machines.getNames();
+        ArrayList<String> descriptions = Machines.getDescriptions();
+        machineButtons = new JToggleButton[names.size()];
         ButtonGroup group = new ButtonGroup();
         JPanel options = new JPanel(new GridLayout(2, 2, 30, 20));
         options.setOpaque(false);
         options.setBorder(BorderFactory.createEmptyBorder(40, 80, 40, 80));
-        for (int i = 0; i < names.length; i++) {
-            machineButtons[i] = new JToggleButton("<html><center>" + names[i]
-                  + "<br><font size='3'>" + DESCRIPTIONS[i] + "</font></center></html>", i == 0 );
+        for (int i = 0; i < names.size(); i++) {
+            machineButtons[i] = new JToggleButton("<html><center>" + names.get(i)
+                  + "<br><font size='3'>" + descriptions.get(i) + "</font></center></html>", i == 0 );
             machineButtons[i].setFont(new Font("Comic Sans MS", Font.BOLD, 22));
             machineButtons[i].setForeground(Color.BLACK);
             machineButtons[i].setBorder(BorderFactory.createLineBorder(Color.WHITE, 3));
@@ -136,16 +131,16 @@ public class MachinePanel extends JPanel implements ActionListener {
             }
         }
     }
+
     /**
-     * retorna el nombre de la maquina que se escogio
+     * @return el nombre de la maquina que se escogio
      */
     public String getSelected() {
-        String selected = DOPOSoccer.MACHINES[0];
-        for (int i = 0; i < machineButtons.length; i++){
+        String selected = names.get(0);
+        for (int i = 0; i < machineButtons.length; i++) {
             if (machineButtons[i].isSelected()) {
-                selected = DOPOSoccer.MACHINES[i];
+                selected = names.get(i);
             }
-            
         }
         return selected;
     }
