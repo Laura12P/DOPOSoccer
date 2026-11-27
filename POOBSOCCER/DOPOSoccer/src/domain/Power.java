@@ -15,6 +15,7 @@ public abstract class Power implements Serializable {
     private double speed;
     private double seconds;
     private boolean groundShot;
+    private int[] aura;
 
     /**
      * CONSTRUCTOR
@@ -24,12 +25,13 @@ public abstract class Power implements Serializable {
      * @param seconds es cuanto dura el efecto sobre el rival
      * @param groundShot es true si el balon sale a ras de suelo
      */
-    public Power(String name, int damage, double speed, double seconds, boolean groundShot) {
+    public Power(String name, int damage, double speed, double seconds, boolean groundShot, int[] aura) {
         this.name = name;
         this.damage = damage;
         this.speed = speed;
         this.seconds = seconds;
         this.groundShot = groundShot;
+        this.aura = aura;
     }
 
     /**
@@ -65,18 +67,36 @@ public abstract class Power implements Serializable {
      * @param user es el jugador que hizo el tiro
      * @param rival es el jugador golpeado
      * @param direction es 1 si el tiro va a la der, y -1 si va a la izq
-     * @param ball es el balon del partido
+     * @param game es el partido
      */
-    public void hit(Player user, Player rival, int direction, Ball ball) {
+    public void hit(Player user, Player rival, int direction, DOPOSoccer game) {
         rival.receiveDamage((int) Math.round(damage * user.getKickMultiplier()));
-        applyEffect(rival, direction, ball);
+        applyEffect(user, rival, direction, game);
     }
 
     /**
-     * pone el efecto propio de este tiro
+     * pone el efecto propio de este tiro, puede afectar al rival, al que tiro o al partido
+     * @param user es el jugador que hizo el tiro
      * @param rival es el jugador golpeado
      * @param direction es 1 si el tiro va a la der, y -1 si va a la izq
-     * @param ball es el balon del partido
+     * @param game es el partido
      */
-    protected abstract void applyEffect(Player rival, int direction, Ball ball);
+    protected abstract void applyEffect(Player user, Player rival, int direction, DOPOSoccer game);
+
+    /**
+     * @return el color del aura en RGBA: rojo, verde, azul y transparencia
+     */
+    public int[] getAura() {
+        return aura;
+    }
+
+    /**
+     * se llama apenas el jugador activa el poder, antes de patear
+     * por defecto no hace nada
+     * @param user es el jugador que activo el poder
+     * @param rival es el otro jugador
+     * @param game es el partido
+     */
+    public void activate(Player user, Player rival, DOPOSoccer game) {
+    }
 }
