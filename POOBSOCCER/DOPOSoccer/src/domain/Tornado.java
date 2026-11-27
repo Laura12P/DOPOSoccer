@@ -15,6 +15,6 @@ public class Tornado extends Power {
     }
 
     protected void applyEffect(Player rival, int direction, Ball ball) {
-        rival.applyKnockOut(getFrames());
+        rival.applyEffect(new KnockOutEffect(), getFrames());
     }
 }
