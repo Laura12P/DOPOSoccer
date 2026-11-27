@@ -15,6 +15,6 @@ public class BlueAura extends Power {
     }
 
     protected void applyEffect(Player rival, int direction, Ball ball) {
-        rival.applyPush(direction, getFrames());
+        rival.applyEffect(new PushEffect(direction), getFrames());
     }
 }
